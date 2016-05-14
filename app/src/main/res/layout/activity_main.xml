@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout
+    android:id="@+id/drawerLayout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <FrameLayout
+        android:id="@+id/main_container"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+                <RelativeLayout
+                    xmlns:tools="http://schemas.android.com/tools"
+
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    android:paddingRight="@dimen/activity_horizontal_margin"
+                    android:paddingTop="@dimen/activity_vertical_margin"
+                    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity"
+                    android:focusableInTouchMode="false"
+                    android:background="#ffff3268"
+                    android:orientation="vertical">
+
+                    <ScrollView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/scrollView2"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_above="@+id/linearLayout"
+                        android:layout_alignParentTop="true">
+
+                        <GridLayout
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:columnCount="2"
+                            android:id="@+id/gridLayout"
+                            android:layout_above="@+id/linearLayout"
+                            android:onClick="onMainClick"
+                            >
+                            <com.cardiomood.android.controls.gauge.SpeedometerGauge
+                                android:id="@+id/speedometer"
+                                android:padding="8dp"
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_columnSpan="2" />
+
+                            <TextView
+                                android:text="Model:"
+                                android:layout_gravity="start"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/textViewModel"
+                                android:textColor="@android:color/white" />
+                            <TextView
+                                android:text="Network Class:"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/id_netclass"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="NetName:"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/id_netname"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="Cell Id:"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/id_cellid"
+                                android:textColor="@android:color/white"
+                                />
+
+                            <TextView
+                                android:text="RNC:"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/id_rnc"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="LAC:"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/id_lac"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="Signal Strength:"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/id_rssi"
+                                android:textColor="@android:color/white"
+                                />
+
+                            <TextView
+                                android:text="DL Rate:"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/rateText_id"
+                                android:textColor="@android:color/white"
+                                />
+
+                            <TextView
+                                android:text="DL Min, Max:"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/id_minmaxrate"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="UL Rate:"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/txRateText_id"
+                                android:textColor="@android:color/white"
+                                />
+
+                            <TextView
+                                android:text="UL Min, Max"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/id_minmaxTxrate"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="latitude, longitude "
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:textColor="#ff0000ff"
+                                android:id="@+id/id_lat"
+                                android:clickable="true"
+                                android:text="---"
+                                android:onClick="onLocationClick" />
+                            <TextView
+                                android:textColor="@android:color/white"
+                                android:text="CDMA Dbm" />
+                            <TextView
+                                android:textColor="@android:color/white"
+                                android:id="@+id/id_cdmaDbm"
+                                android:text="---" />
+                            <TextView
+                                android:textColor="@android:color/white"
+                                android:text="CDMA Ecio" />
+                            <TextView
+                                android:textColor="@android:color/white"
+                                android:id="@+id/id_cdmaEcio"
+                                android:text="---" />
+                            <TextView
+                                android:textColor="@android:color/white"
+                                android:id="@+id/id_neighbors"
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_columnSpan="2" />
+                        </GridLayout>
+                    </ScrollView>
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:id="@+id/linearLayout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        >
+                        <ImageView android:id="@+id/ac_logo"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:scaleType="center"
+                            />
+                        <Button
+                            android:textSize="25dp"
+                            android:textColor="#ffffffff"
+                            android:id="@+id/btnStartTest"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Start Test" />
+
+                        <Button
+                            android:textSize="25dp"
+                            android:textColor="#ffffffff"
+                            android:id="@+id/id_BtnHistory"
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Show History" />
+
+                            />
+                    </LinearLayout>
+
+                </RelativeLayout>
+    </FrameLayout>
+    <ListView
+        android:entries="@array/main_selection"
+        android:layout_gravity="left"
+        android:id="@+id/drawerList"
+        android:background="#80ffffff"
+        android:layout_width="180dp"
+        android:layout_height="fill_parent" />
+</android.support.v4.widget.DrawerLayout>
