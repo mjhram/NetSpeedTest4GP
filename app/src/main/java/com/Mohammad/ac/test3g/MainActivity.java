@@ -3,10 +3,12 @@ package com.Mohammad.ac.test3g;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -16,6 +18,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
+import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
@@ -32,6 +36,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
+import com.crashlytics.android.Crashlytics;
 
 import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
@@ -42,13 +47,15 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
 
+import io.fabric.sdk.android.Fabric;
+
 enum speedUnit {bps, Kbps, Mbps, Gbps};
 
-public class MainActivity extends Activity implements AdapterView.OnItemClickListener{
+public class MainActivity extends Activity implements AdapterView.OnItemClickListener, LocationListener {
     private Context mAppContext;
     static TelephonyManager        mTelephonyMgr;
     MyPhoneStateListener    MyListener;
-    private c_Info mobInfo;
+    public c_Info mobInfo;
     public TextView txt_netclass;
     public TextView txt_netname;
     public TextView txt_model;
@@ -63,6 +70,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     String upLoadServerUri = serverUri + "/en/upload.php";
     static final String MOB_INFO = "mobInfo";
     MainActivity thisActivity;
+    databaseHandler dbHandler;
 
     // button to show progress dialog
     Button btnStartTest;
@@ -82,6 +90,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     public TextView txt_neighboring;
     private SpeedometerGauge speedometer;
 
+    private gpsTracker locationTracker;
     private void initalGaugeView()
     {
         speedometer = ((SpeedometerGauge)findViewById(R.id.speedometer));
@@ -109,7 +118,12 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         thisActivity = this;
+        dbHandler = new databaseHandler(this);
+        locationTracker = new gpsTracker(this);
+
+
         setContentView(R.layout.activity_main);
         myUtility.OrientationUtils.lockOrientationPortrait(this);
 
@@ -141,14 +155,36 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         btnHistory.setOnClickListener(new View.OnClickListener() {
               @Override
               public void onClick(View v) {
-                  if(mobInfo.deviceId == null) {
-                      collectInitInfo();
-                      mobInfo.showInfo(thisActivity);
+                  if(dbHandler.get3gTestsCount() !=0) {
+                      //local history instead of site history
+                      Intent myIntent = new Intent(MainActivity.this, InfoListActivity.class);
+                      MainActivity.this.startActivity(myIntent);
+                  } else {
+                      new AlertDialog.Builder(MainActivity.this)
+                              .setTitle("History")
+                              .setMessage("There are no local History records. open web history?")
+                              .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                  public void onClick(DialogInterface dialog, int which) {
+                                      // continue with delete
+                                      if (mobInfo.deviceId == null) {
+                                          collectInitInfo();
+                                          mobInfo.showInfo(thisActivity);
+                                      }
+                                      String url = serverUri + "/en/index.php?dev=" + mobInfo.deviceId + "&ver=Feb12";
+                                      Intent i = new Intent(Intent.ACTION_VIEW);
+                                      i.setData(Uri.parse(url));
+                                      startActivity(i);
+                                  }
+                              })
+                              .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                  public void onClick(DialogInterface dialog, int which) {
+                                      // do nothing
+                                  }
+                              })
+                              .setIcon(android.R.drawable.ic_dialog_alert)
+                              .show();
                   }
-                  String url = serverUri + "/en/index.php?dev="+mobInfo.deviceId + "&ver=Feb12";
-                  Intent i = new Intent(Intent.ACTION_VIEW);
-                  i.setData(Uri.parse(url));
-                  startActivity(i);
+                  /**/
               }
         });
 
@@ -183,7 +219,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
 
         /* Update the listener, and start it */
         MyListener   = new MyPhoneStateListener();
-        mTelephonyMgr.listen(MyListener ,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        mTelephonyMgr.listen(MyListener ,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS | PhoneStateListener.LISTEN_CELL_LOCATION);
         collectInitInfo();
         mobInfo.showInfo(thisActivity);
     }
@@ -308,7 +344,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
             mobInfo.rnc = (mobInfo.cid & 0xffff0000) >> 16;
             mobInfo.lac = cellLocation.getLac();
         }
-        mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         //Geo Locatoion:
         Location loc = getLocation();//getLastKnownLocation();//
         if(loc != null) {
@@ -322,6 +358,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     {
         super.onPause();
         //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_NONE);
+        locationTracker.unregProviders();
     }
 
     /* Called when the application resumes */
@@ -341,12 +378,45 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         //Log.d("dev", mobInfo.deviceId);
         System.out.print("dev"+mobInfo.deviceId);
         //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+        locationTracker.regProviders();
     }
     /* —————————– */
     /* Start the PhoneState listener */
     /* —————————– */
     private class MyPhoneStateListener extends PhoneStateListener
     {
+        @Override
+        public void onCellLocationChanged(CellLocation location)
+        {
+            GsmCellLocation cellLocation = (GsmCellLocation) location;
+            if(cellLocation != null) {
+                mobInfo.cid = cellLocation.getCid();
+                mobInfo.cid_3g = mobInfo.cid & 0xffff;
+                mobInfo.rnc = (mobInfo.cid & 0xffff0000) >> 16;
+                mobInfo.lac = cellLocation.getLac();
+
+                mobInfo.netType = mTelephonyMgr.getNetworkType();
+                mobInfo.netClass = getNetworkClass(mobInfo.netType);
+                //show info
+                MainActivity.this.txt_netclass.setText(mobInfo.netClass+" - "+mobInfo.netClass2);
+                if(mobInfo.netClass.equals("2G")) {
+                    MainActivity.this.txt_cellid.setText(""+mobInfo.cid);
+                    MainActivity.this.txt_rnc.setText("");
+                }else {
+                    MainActivity.this.txt_cellid.setText(String.format("%04d",mobInfo.cid_3g));
+                    MainActivity.this.txt_rnc.setText(""+mobInfo.rnc);
+                }
+            }
+
+            /*if(mobInfo.rssi != oldRssi) {
+                if(mobInfo.rssi != 99 && mobInfo.rssi !=0) {
+                    txt_rssi.setText("" + mobInfo.rssi);
+                }else {
+                    txt_rssi.setText("---");
+                }
+            }*/
+            super.onCellLocationChanged(location);
+        }
         /* Get the Signal strength from the provider, each tiome there is an update */
         @Override
         public void onSignalStrengthsChanged(SignalStrength signalStrength)
@@ -489,6 +559,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                     }
                     boolean uploadDone = intent.getBooleanExtra("UL_DONE",false);
                     if(uploadDone) {
+                        dbHandler.add3gTest(mobInfo);
                         mobInfo.upload(thisActivity);
                     }
                     break;
@@ -540,8 +611,11 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 long initialTime = System.currentTimeMillis();
                 long TotalTxBeforeTest = TrafficStats.getTotalTxBytes();
                 long TotalRxBeforeTest = TrafficStats.getTotalRxBytes();
+
+                long initialTotalRx = TrafficStats.getTotalRxBytes();
                 mobInfo.minRxRate = Double.MAX_VALUE;
                 mobInfo.maxRxRate = 0;
+                mobInfo.avRxRate=0;
                 do {
                     if (((count = input.read(data)) == -1)) {
                         break;
@@ -562,6 +636,15 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                         } else {
                             rate = 0.0;
                         }
+
+                        double overallTimeDifference = AfterTime - initialTime;
+                        double overallRxDiff = TotalRxAfterTest - initialTotalRx;
+                        if (overallRxDiff != 0) {
+                            double rxBPS = (overallRxDiff / (overallTimeDifference / 1000.0)); // total rx bytes per second.
+                            mobInfo.avRxRate = rxBPS * 8;
+                        } else {
+                            mobInfo.avRxRate = 0.0;
+                        }
                         if (AfterTime - initialTime > 25000) {
                             break;
                         }
@@ -571,7 +654,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                         if (rate > mobInfo.maxRxRate) {
                             mobInfo.maxRxRate = rate;
                         }
-                        publishProgress(rate/*, mobInfo.minRxRate, mobInfo.maxRxRate*/);
+                        publishProgress(rate, mobInfo.avRxRate/*, mobInfo.minRxRate, mobInfo.maxRxRate*/);
                         BeforeTime = System.currentTimeMillis();
                         TotalTxBeforeTest = TrafficStats.getTotalTxBytes();
                         TotalRxBeforeTest = TrafficStats.getTotalRxBytes();
@@ -601,6 +684,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         protected void onProgressUpdate(Double... progress) {
             String str = MainActivity.getRateWithUnit(progress[0]);
             MainActivity.this.txtRxRateText.setText(str);
+            MainActivity.this.txt_minmaxrx.setText("-"+", "+"-"+", "+MainActivity.getRateWithUnit(mobInfo.avRxRate));
             MainActivity.this.speedometer.setSpeed(progress[0].doubleValue() / 1024.0D / 1024.0D,1000,0);
         }
 
@@ -615,7 +699,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     class uploadFileToURL extends AsyncTask<String, Double, String> {
         //String str_unit;
         speedUnit unit;
-        long BeforeTime, initialTime, TotalTxBeforeTest;
+        long BeforeTime, initialTime, TotalTxBeforeTest, initialTotalTx;
         //double rate, minTxRate, maxTxRate;
         Context cntx;
 
@@ -635,8 +719,10 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 BeforeTime = System.currentTimeMillis();
                 initialTime = System.currentTimeMillis();
                 TotalTxBeforeTest = TrafficStats.getTotalTxBytes();
+                initialTotalTx = TrafficStats.getTotalTxBytes();
                 mobInfo.minTxRate = Double.MAX_VALUE;
                 mobInfo.maxTxRate = 0;
+                mobInfo.avTxRate = 0;
                 return false;
             }
 
@@ -659,10 +745,21 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 if(rate > mobInfo.maxTxRate ){
                     mobInfo.maxTxRate = rate;
                 }
-                if(AfterTime - initialTime > 25000) {
+
+                double overallTimeDifference = AfterTime -initialTime;
+                double overallTxDiff = TotalTxAfterTest - initialTotalTx;
+                if(overallTxDiff != 0) {
+                    double txBPS = (overallTxDiff / (overallTimeDifference/1000.0)); // total tx bytes per second.
+                    mobInfo.avTxRate = txBPS*8;
+                }
+                else {
+                    mobInfo.avTxRate=0.0;
+                }
+
+                if(overallTimeDifference > 25000) {
                     return true;
                 }
-                publishProgress(rate/*, minTxRate, maxTxRate*/);
+                publishProgress(rate, mobInfo.avTxRate/*, minTxRate, maxTxRate*/);
                 BeforeTime = System.currentTimeMillis();
                 TotalTxBeforeTest = TrafficStats.getTotalTxBytes();
             }
@@ -724,6 +821,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 if(mobInfo.minTxRate == Double.MAX_VALUE) {
                     mobInfo.minTxRate = 0;
                 }
+                dbHandler.add3gTest(mobInfo);
                 mobInfo.upload(MainActivity.this);
             } catch (MalformedURLException ex) {
                 //dialog.dismiss();
@@ -743,6 +841,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         protected void onProgressUpdate(Double... progress) {
             String str = MainActivity.getRateWithUnit(progress[0]);
             MainActivity.this.txtTxRateText.setText(str);
+            MainActivity.this.txt_minmaxtx.setText("-"+", "+"-"+", "+MainActivity.getRateWithUnit(mobInfo.avTxRate));
             MainActivity.this.speedometer.setSpeed(progress[0].doubleValue() / 1024.0D / 1024.0D,1000,0);
         }
 
@@ -779,4 +878,25 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         startActivity(localIntent);
     }
 
+
+    @Override
+    public void onLocationChanged(Location location) {
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+    }
+
+    public void onTestClick(View v) {
+        Intent myIntent = new Intent(MainActivity.this, InfoListActivity.class);
+        MainActivity.this.startActivity(myIntent);
+    }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">3G Test</string>
-    <string name="about">This app was created and maintained by Mohammad J. Haider.</string>
+    <string name="app_name">Net Speed Check</string>
+    <string name="about">This app was created and maintained by "Unknown"</string>
     <string name="action_settings">Settings</string>
     <string name="spdBtn_OnClick"></string>
     <string name="title_activity_about">AboutActivity</string>

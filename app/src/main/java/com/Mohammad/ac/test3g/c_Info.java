@@ -1,7 +1,10 @@
 package com.Mohammad.ac.test3g;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -22,6 +25,7 @@ import java.util.Map;
  */
 public class c_Info implements Parcelable{
     //private MainActivity theActivity;
+    public String time;//used for sqliteDB timestamp
     private String serverUri;
     public String deviceId;
     public String deviceId2;
@@ -53,17 +57,21 @@ public class c_Info implements Parcelable{
     public double rxRate, txRate;
     public double minRxRate;
     public double maxRxRate;
+    public double avRxRate;
     public double minTxRate;
     public double maxTxRate;
+    public double avTxRate;
     public double pingTime;
     public double lat, lon;//Location info
     public int cdmaDbm;
     public int cdmaEcio;
     public String neighboringCells;
     public String tmp;
+    final private String TABLE_3gTests = "netTests";
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        //dest.writeString(time);
         dest.writeString(deviceId);
         dest.writeString(deviceId2);
         dest.writeString(manuf);
@@ -95,8 +103,10 @@ public class c_Info implements Parcelable{
         dest.writeDouble(txRate);
         dest.writeDouble(minRxRate);
         dest.writeDouble(maxRxRate);
+        dest.writeDouble(avRxRate);
         dest.writeDouble(minTxRate);
         dest.writeDouble(maxTxRate);
+        dest.writeDouble(avTxRate);
         dest.writeDouble(pingTime);
         dest.writeDouble(lat);
         dest.writeDouble(lon);
@@ -112,6 +122,7 @@ public class c_Info implements Parcelable{
     }
 
     private void readFromParcel(Parcel in) {
+        //time = in.readString();
         deviceId=in.readString();
         deviceId2=in.readString();
         manuf=in.readString();
@@ -143,8 +154,10 @@ public class c_Info implements Parcelable{
         txRate = in.readDouble();
         minRxRate=in.readDouble();
         maxRxRate=in.readDouble();
+        avRxRate=in.readDouble();
         minTxRate=in.readDouble();
         maxTxRate=in.readDouble();
+        avTxRate=in.readDouble();
         pingTime=in.readDouble();
         lat=in.readDouble();
         lon=in.readDouble();
@@ -152,6 +165,7 @@ public class c_Info implements Parcelable{
         cdmaDbm=in.readInt();
         cdmaEcio = in.readInt();
         tmp = in.readString();
+
     }
 
     //private Activity theActivity;
@@ -263,11 +277,13 @@ public class c_Info implements Parcelable{
                 params.put("lac", Integer.toString(lac));
                 params.put("rssi", Integer.toString(rssi));
                 params.put("SignalStrengths",SignalStrengths);
-                String tmpStr = String.format("%.2f", minRxRate);
+                String tmpStr = String.format("%d", Math.round(minRxRate));
                 params.put("minRxRate", tmpStr);
-                params.put("maxRxRate", String.format("%.2f", maxRxRate));
-                params.put("minTxRate", String.format("%.2f", minTxRate));
-                params.put("maxTxRate", String.format("%.2f", maxTxRate));
+                params.put("maxRxRate", String.format("%d", Math.round(maxRxRate)));
+                params.put("avRxRate", String.format("%d", Math.round(avRxRate)));
+                params.put("minTxRate", String.format("%d", Math.round(minTxRate)));
+                params.put("maxTxRate", String.format("%d", Math.round(maxTxRate)));
+                params.put("avTxRate", String.format("%d", Math.round(avTxRate)));
                 params.put("lon", Double.toString(lon));
                 params.put("lat", Double.toString(lat));
                 tmp = brand;
@@ -337,6 +353,177 @@ public class c_Info implements Parcelable{
         getRequestQueue(cntx).add(strReq);
     }
 
+    static public c_Info getInfoFromRow(Cursor in) {
+        c_Info tmpMobInfo = new c_Info("");
+
+        tmpMobInfo.time=in.getString(in.getColumnIndex("time"));
+        tmpMobInfo.deviceId=in.getString(in.getColumnIndex("deviceId"));
+        tmpMobInfo.deviceId2=in.getString(in.getColumnIndex("deviceId2"));
+        tmpMobInfo.manuf=in.getString(in.getColumnIndex("Manufacturer"));
+        tmpMobInfo.brand=in.getString(in.getColumnIndex("Brand"));
+        tmpMobInfo.model=in.getString(in.getColumnIndex("Model"));
+        tmpMobInfo.product=in.getString(in.getColumnIndex("Product"));
+        tmpMobInfo.imsi=in.getString(in.getColumnIndex("imsi"));
+        tmpMobInfo.imsi2=in.getString(in.getColumnIndex("imsi2"));
+        tmpMobInfo.phoneNumber=in.getString(in.getColumnIndex("phoneNumber"));
+        tmpMobInfo.phoneNumber2=in.getString(in.getColumnIndex("phoneNum2"));
+        String imei=in.getString(in.getColumnIndex("imei"));
+        tmpMobInfo.netOperator=in.getString(in.getColumnIndex("netOperator"));
+        tmpMobInfo.netOperator2=in.getString(in.getColumnIndex("netOperator2"));
+        tmpMobInfo.netName=in.getString(in.getColumnIndex("netName"));
+        tmpMobInfo.netName2=in.getString(in.getColumnIndex("netName2"));
+        tmpMobInfo.netType=in.getInt(in.getColumnIndex("netType"));
+        tmpMobInfo.netType2=in.getInt(in.getColumnIndex("netType2"));
+        tmpMobInfo.netClass=in.getString(in.getColumnIndex("netClass"));
+        tmpMobInfo.netClass2=in.getString(in.getColumnIndex("netClass2"));
+        tmpMobInfo.phoneType=in.getInt(in.getColumnIndex("phoneType"));
+        tmpMobInfo.mobileState=in.getString(in.getColumnIndex("mobileState"));
+        tmpMobInfo.cid=in.getInt(in.getColumnIndex("cid"));
+        tmpMobInfo.cid_3g=in.getInt(in.getColumnIndex("cid_3g"));
+        tmpMobInfo.rnc=in.getInt(in.getColumnIndex("rnc"));
+        tmpMobInfo.lac=in.getInt(in.getColumnIndex("lac"));
+        tmpMobInfo.rssi=in.getInt(in.getColumnIndex("rssi"));
+        tmpMobInfo.SignalStrengths=in.getString(in.getColumnIndex("SignalStrengths"));
+        //tmpMobInfo.rxRate = in.getDouble(in.getColumnIndex("EmployeeName"));
+        //tmpMobInfo.txRate = in.getDouble(in.getColumnIndex("EmployeeName"));
+        tmpMobInfo.minRxRate=in.getDouble(in.getColumnIndex("minRxRate"));
+        tmpMobInfo.maxRxRate=in.getDouble(in.getColumnIndex("maxRxRate"));
+        tmpMobInfo.avRxRate=in.getDouble(in.getColumnIndex("avRxRate"));
+        tmpMobInfo.minTxRate=in.getDouble(in.getColumnIndex("minTxRate"));
+        tmpMobInfo.maxTxRate=in.getDouble(in.getColumnIndex("maxTxRate"));
+        tmpMobInfo.avTxRate=in.getDouble(in.getColumnIndex("avTxRate"));
+        //tmpMobInfo.pingTime=in.getDouble(in.getColumnIndex("EmployeeName"));
+        tmpMobInfo.lat=in.getDouble(in.getColumnIndex("lat"));
+        tmpMobInfo.lon=in.getDouble(in.getColumnIndex("lon"));
+        tmpMobInfo.neighboringCells = in.getString(in.getColumnIndex("nei"));
+        tmpMobInfo.cdmaDbm=in.getInt(in.getColumnIndex("cdmaDbm"));
+        tmpMobInfo.cdmaEcio = in.getInt(in.getColumnIndex("cdmaEcio"));
+        tmpMobInfo.tmp = in.getString(in.getColumnIndex("tmp"));
+        return tmpMobInfo;
+    }
+
+    public void add3gTest2db(SQLiteDatabase db)
+    {
+        // Tag used to cancel the request
+        final String tag_string = "add3GTest";
+        ContentValues params = new ContentValues();
+        tmp = deviceId;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("deviceId", tmp);
+        tmp = imsi;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("imsi", imsi);
+        tmp = phoneNumber;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("phoneNumber", tmp);
+        params.put("imei", "");//imei);
+        tmp = netOperator;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("netOperator", tmp);
+        tmp = netName;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("netName", tmp);
+
+        params.put("netType", Integer.toString(netType));
+        tmp = netClass;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("netClass", tmp);
+        params.put("phoneType", Integer.toString(phoneType));
+        tmp = mobileState;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("mobileState", tmp);
+        params.put("cid", Integer.toString(cid));
+        params.put("cid_3g", Integer.toString(cid_3g));
+        params.put("rnc", Integer.toString(rnc));
+        params.put("lac", Integer.toString(lac));
+        params.put("rssi", Integer.toString(rssi));
+        params.put("SignalStrengths",SignalStrengths);
+        String tmpStr = String.format("%d", Math.round(minRxRate));
+        params.put("minRxRate", tmpStr);
+        params.put("maxRxRate", String.format("%d", Math.round(maxRxRate)));
+        params.put("avRxRate", String.format("%d", Math.round(avRxRate)));
+        params.put("minTxRate", String.format("%d", Math.round(minTxRate)));
+        params.put("maxTxRate", String.format("%d", Math.round(maxTxRate)));
+        params.put("avTxRate", String.format("%d", Math.round(avTxRate)));
+        params.put("lon", Double.toString(lon));
+        params.put("lat", Double.toString(lat));
+        tmp = brand;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("Brand", tmp);
+        tmp = manuf;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("Manufacturer", tmp);
+        tmp = product;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("Product", tmp);
+        tmp = model;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("Model", tmp);
+        tmp = deviceId2;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("deviceId2", tmp);
+        tmp = imsi2;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("imsi2", tmp);
+        tmp = phoneNumber2;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("phoneNum2", tmp);
+        tmp = netOperator2;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("netOperator2", tmp);
+        tmp = netName2;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("netName2", tmp);
+        params.put("netType2", Integer.toString(netType2));
+        tmp = netClass2;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("netClass2", tmp);
+        tmp = neighboringCells;
+        if(tmp == null)  {
+            tmp ="";
+        }
+        params.put("nei", tmp);
+        params.put("cdmaDbm", Integer.toString(cdmaDbm));
+        params.put("cdmaEcio", Integer.toString(cdmaEcio));
+        params.put("tmp", "");
+        long tmp =  db.insert(TABLE_3gTests, null, params);
+        Log.d("Test",Long.toString(tmp));
+    }
+
     private RequestQueue mRequestQueue;
     public RequestQueue getRequestQueue(Context cntx) {
         if (mRequestQueue == null) {
@@ -358,8 +545,8 @@ public class c_Info implements Parcelable{
         }
         theActivity.txt_lac.setText(""+lac);
         theActivity.txt_rssi.setText(""+rssi);
-        theActivity.txt_minmaxrx.setText(MainActivity.getRateWithUnit(minRxRate)+", "+MainActivity.getRateWithUnit(maxRxRate));
-        theActivity.txt_minmaxtx.setText(MainActivity.getRateWithUnit(minTxRate)+", "+MainActivity.getRateWithUnit(maxTxRate));
+        theActivity.txt_minmaxrx.setText(MainActivity.getRateWithUnit(minRxRate)+", "+MainActivity.getRateWithUnit(maxRxRate)+", "+MainActivity.getRateWithUnit(avRxRate));
+        theActivity.txt_minmaxtx.setText(MainActivity.getRateWithUnit(minTxRate)+", "+MainActivity.getRateWithUnit(maxTxRate)+", "+MainActivity.getRateWithUnit(avTxRate));
         theActivity.txt_latitude.setText(""+lat + ", " + +lon);
 
         theActivity.txt_neighboring.setText(this.neighboringCells);

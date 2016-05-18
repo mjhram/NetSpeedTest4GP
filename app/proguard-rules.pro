@@ -15,3 +15,11 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+#Fabric-First of all, Fabric uses annotations internally, so add the following line to your configuration file:
+-keepattributes *Annotation*
+#Fabric-Next, in order to provide the most meaningful crash reports, add the following line to your configuration file:
+-keepattributes SourceFile,LineNumberTable
+#Fabric-If you are using custom exceptions, add this line so that custom exception types are skipped during obfuscation:
+-keep public class * extends java.lang.Exception
+

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:background="@drawable/bg_main"
+    android:layout_height="match_parent">
+
+    <GridLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:id="@+id/gridLayout"
+        android:layout_above="@+id/linearLayout"
+        >
+        <TextView
+            android:text="Time:"
+            android:layout_width="wrap_content"
+            android:layout_gravity="start"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/textViewTime"
+            android:textColor="@android:color/white" />
+        <TextView
+            android:text="Model:"
+            android:layout_width="wrap_content"
+            android:layout_gravity="start"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/textViewModel"
+            android:textColor="@android:color/white" />
+        <TextView
+            android:text="Network Class:"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/id_netclass"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="NetName:"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/id_netname"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="Cell Id:"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/id_cellid"
+            android:textColor="@android:color/white"
+            />
+
+        <TextView
+            android:text="RNC:"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/id_rnc"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="LAC:"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/id_lac"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="Signal Strength:"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/id_rssi"
+            android:textColor="@android:color/white"
+            />
+
+        <TextView
+            android:text="DL Rate:"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/rateText_id"
+            android:textColor="@android:color/white"
+            />
+
+        <TextView
+            android:text="DL Min,Max,Av:"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/id_minmaxrate"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="UL Rate:"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/txRateText_id"
+            android:textColor="@android:color/white"
+            />
+
+        <TextView
+            android:text="UL Min,Max,Av"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/id_minmaxTxrate"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="latitude, longitude "
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:textColor="#ff0000ff"
+            android:id="@+id/id_lat"
+            android:clickable="true"
+            android:text="---"
+            android:onClick="onLocationClick" />
+        <TextView
+            android:textColor="@android:color/white"
+            android:text="CDMA Dbm"
+            android:visibility="gone"/>
+        <TextView
+            android:textColor="@android:color/white"
+            android:id="@+id/id_cdmaDbm"
+            android:text="---"
+            android:visibility="gone"/>
+        <TextView
+            android:textColor="@android:color/white"
+            android:text="CDMA Ecio"
+            android:visibility="gone"/>
+        <TextView
+            android:textColor="@android:color/white"
+            android:id="@+id/id_cdmaEcio"
+            android:text="---"
+            android:visibility="gone"/>
+        <TextView
+            android:textColor="@android:color/white"
+            android:id="@+id/id_neighbors"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_columnSpan="2"
+            android:visibility="gone"
+            />
+    </GridLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"/>
+</LinearLayout>
