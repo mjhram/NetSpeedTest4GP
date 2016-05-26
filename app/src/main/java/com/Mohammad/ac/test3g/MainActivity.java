@@ -861,7 +861,8 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     @Override
     public void onItemClick(AdapterView<?> parent, View v, int position, long is)
     {
-        if (position == 1)
+        String[] menuArray = getResources().getStringArray(R.array.main_selection);
+        if (menuArray[position].equalsIgnoreCase("About"))
         {
             Intent localIntent = new Intent(this, AboutActivity.class);
             startActivity(localIntent);

@@ -11,7 +11,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /*public class InfoListActivity extends Activity {
 
@@ -79,7 +84,7 @@ class MyInfoArrayAdapter extends ArrayAdapter<c_Info> {
     private void showInfo(c_Info info, View rowView) {
         TextView txt_tmp;
         txt_tmp = (TextView) rowView.findViewById(R.id.textViewTime);
-        txt_tmp.setText(info.time);
+        txt_tmp.setText(getDate(info.time));
 
         txt_tmp = (TextView) rowView.findViewById(R.id.textViewModel);
         txt_tmp.setText(info.manuf.toUpperCase() + "/" + info.model);
@@ -111,6 +116,20 @@ class MyInfoArrayAdapter extends ArrayAdapter<c_Info> {
 
     }
 
+    private String getDate(String time) {
+        Timestamp timestamp = Timestamp.valueOf(time);
+        Calendar calendar = Calendar.getInstance();
+        TimeZone tz = TimeZone.getDefault();
+
+        calendar.setTimeInMillis(timestamp.getTime());
+        calendar.add(Calendar.MILLISECOND, tz.getOffset(calendar.getTimeInMillis()));
+
+        SimpleDateFormat sdf = (SimpleDateFormat) SimpleDateFormat.getDateTimeInstance();
+        Date currenTimeZone = (Date)calendar.getTime();
+        String date = sdf.format(currenTimeZone);
+
+        return date;
+    }
 
 }
 

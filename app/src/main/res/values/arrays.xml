@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="main_selection">
-        <item>3G Test</item>
         <item>About</item>
     </string-array>
 </resources>
