@@ -234,13 +234,17 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     String isMobileEnabled(){
         ConnectivityManager cm = (ConnectivityManager) mAppContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        //mob_avail = info.isAvailable();
-        NetworkInfo.State state;
-        //if(mob_avail)
-        {
-            state = info.getState();
+        if(info == null) {
+            return "";
+        } else {
+            //mob_avail = info.isAvailable();
+            NetworkInfo.State state;
+            //if(mob_avail)
+            {
+                state = info.getState();
+            }
+            return state.toString();
         }
-        return state.toString();
     }
 
     private boolean isNetworkAvailable()
