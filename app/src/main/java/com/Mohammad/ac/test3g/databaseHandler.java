@@ -71,7 +71,9 @@ public class databaseHandler extends SQLiteOpenHelper {
                         + " maxTxRate int(11) NOT NULL,"
                         + " avTxRate int(11) NOT NULL, "
                         + " cdmaDbm int(11) NOT NULL, "
-                        + " cdmaEcio int(11) NOT NULL "
+                        + " cdmaEcio int(11) NOT NULL, "
+                        + " wifissid varchar(35)  DEFAULT NULL,"
+                        + " netsrc varchar(15)  DEFAULT NULL"
                         + ")";
                  Log.d("Test", CREATE_3gTests_TABLE);
                 db.execSQL(CREATE_3gTests_TABLE);

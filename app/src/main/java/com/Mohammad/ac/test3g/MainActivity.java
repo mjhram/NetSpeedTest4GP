@@ -14,6 +14,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.TrafficStats;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -41,6 +43,7 @@ import com.crashlytics.android.Crashlytics;
 import java.io.BufferedInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -65,6 +68,10 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     public TextView txt_rssi;
     public TextView txt_minmaxrx;
     public TextView txt_latitude;
+    public TextView txt_wifiState;
+    public TextView txt_wifiSsid;
+    public TextView txt_netSrc;
+
     int serverResponseCode = 0;
     String serverUri = "http://www.ttaxi1.com/3gtests";
     String upLoadServerUri = serverUri + "/en/upload.php";
@@ -143,6 +150,10 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         txt_latitude = (TextView) findViewById(R.id.id_lat);
         txtTxRateText = (TextView) findViewById(R.id.txRateText_id);
         txt_minmaxtx = (TextView) findViewById(R.id.id_minmaxTxrate);
+
+        txt_wifiState = (TextView) findViewById(R.id.textViewWifiState);
+        txt_wifiSsid = (TextView) findViewById(R.id.textViewWifiSSID);
+        txt_netSrc = (TextView) findViewById(R.id.textViewNetSrce);
         //mGaugeView2 = (GaugeView) findViewById(R.id.gauge_view2);
 
         this.txt_neighboring = ((TextView)findViewById(R.id.id_neighbors));
@@ -191,6 +202,16 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         btnStartTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(mobInfo.netSource.equalsIgnoreCase("NA")) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage("No active Network available")
+                            .setTitle("No Network")
+                            .setCancelable(true)
+                            .setPositiveButton("OK", null);
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                    return;
+                }
                 collectInitInfo();
                 mobInfo.showInfo(thisActivity);
                 // starting new Async Task
@@ -356,6 +377,53 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
             mobInfo.lat = loc.getLatitude();
         }
     }
+
+    private BroadcastReceiver wifiBroadcastReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+                ConnectivityManager cm =
+                        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                if(activeNetwork != null) {
+                    boolean isConnected = activeNetwork.isConnectedOrConnecting();
+                    boolean isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+                    //btnStartTest.setEnabled(true);
+                    if(isWiFi) {
+                        mobInfo.netSource = "Wifi";
+                    } else {
+                        mobInfo.netSource = "Mobile Data";
+                    }
+                    Log.d("Con","isCon:" + isConnected + "- isWifi:" + isWiFi);
+                } else {
+                    //btnStartTest.setEnabled(false);
+                    mobInfo.netSource = "NA";
+                }
+                txt_netSrc.setText(mobInfo.netSource);
+            }
+            if(intent.getAction().equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
+                NetworkInfo networkInfo =
+                        intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                if(networkInfo!=null && networkInfo.isConnected()) {
+                    //do stuff
+                    WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+                    WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                    mobInfo.wifiSsid = wifiInfo.getSSID();
+                    mobInfo.wifiIsConnected = true;
+                    txt_wifiSsid.setText(mobInfo.wifiSsid);
+                    txt_wifiState.setText("Connected");
+                } else {
+                    mobInfo.wifiSsid = "";
+                    mobInfo.wifiIsConnected = false;
+                    txt_wifiSsid.setText("---");
+                    txt_wifiState.setText("Disconnected");
+                }
+                //Other actions implementation
+            }
+        }
+    };
     /* Called when the application is minimized */
     @Override
     protected void onPause()
@@ -363,6 +431,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         super.onPause();
         //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_NONE);
         locationTracker.unregProviders();
+        unregisterReceiver(wifiBroadcastReceiver);
     }
 
     /* Called when the application resumes */
@@ -383,6 +452,11 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         System.out.print("dev"+mobInfo.deviceId);
         //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
         locationTracker.regProviders();
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(wifiBroadcastReceiver, intentFilter);
     }
     /* —————————– */
     /* Start the PhoneState listener */
@@ -676,7 +750,10 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 //mobInfo.upload();
 
             } catch (Exception e) {
-                Log.e("Error: ", e.getMessage());
+                String eString = e.getMessage();
+                if(eString != null) {
+                    Log.e("Error: ", eString);
+                }
             }
 
             return null;
@@ -798,7 +875,8 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 int len = contentLen+strHeader.length()+11;//+Header
                 len += 13;//Footer
                 conn.setFixedLengthStreamingMode(len);
-                dos = new DataOutputStream(conn.getOutputStream());
+                OutputStream oStream = conn.getOutputStream();
+                dos = new DataOutputStream(oStream);
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
                 dos.writeBytes(strHeader);
                 dos.writeBytes(lineEnd);
@@ -829,7 +907,13 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 mobInfo.upload(MainActivity.this);
             } catch (MalformedURLException ex) {
                 //dialog.dismiss();
-                Toast.makeText(MainActivity.this, "MalformedURLException", Toast.LENGTH_LONG).show();
+                runOnUiThread(new Runnable()
+                {
+                    public void run()
+                    {
+                        Toast.makeText(MainActivity.this, "MalformedURLException", Toast.LENGTH_LONG).show();
+                    }
+                });
                 ex.printStackTrace();
                 Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
             } catch (Exception e) {

@@ -66,8 +66,14 @@ public class c_Info implements Parcelable{
     public int cdmaDbm;
     public int cdmaEcio;
     public String neighboringCells;
+    //wifi info
+    public boolean wifiIsConnected;
+    public String wifiSsid;
+    public String netSource; //mobile data, WiFi or NA
+
     public String tmp;
     final private String TABLE_3gTests = "netTests";
+
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
@@ -113,7 +119,11 @@ public class c_Info implements Parcelable{
         dest.writeString(this.neighboringCells);
         dest.writeInt(cdmaDbm);
         dest.writeInt(cdmaEcio);
+        dest.writeString(wifiSsid);
+        dest.writeValue(wifiIsConnected);
+        dest.writeString(netSource);
         dest.writeString(tmp);
+
     }
 
     @Override
@@ -164,8 +174,10 @@ public class c_Info implements Parcelable{
         neighboringCells = in.readString();
         cdmaDbm=in.readInt();
         cdmaEcio = in.readInt();
+        wifiSsid = in.readString();
+        wifiIsConnected = (Boolean) in.readValue(null);
+        netSource = in.readString();
         tmp = in.readString();
-
     }
 
     //private Activity theActivity;
@@ -344,6 +356,8 @@ public class c_Info implements Parcelable{
                 params.put("nei", tmp);
                 params.put("cdmaDbm", Integer.toString(cdmaDbm));
                 params.put("cdmaEcio", Integer.toString(cdmaEcio));
+                params.put("wifissid", wifiSsid);
+                params.put("netsrc", netSource);
                 params.put("tmp", "");
                 return params;
             }
@@ -398,6 +412,9 @@ public class c_Info implements Parcelable{
         tmpMobInfo.neighboringCells = in.getString(in.getColumnIndex("nei"));
         tmpMobInfo.cdmaDbm=in.getInt(in.getColumnIndex("cdmaDbm"));
         tmpMobInfo.cdmaEcio = in.getInt(in.getColumnIndex("cdmaEcio"));
+        tmpMobInfo.wifiSsid = in.getString(in.getColumnIndex("wifissid"));
+        tmpMobInfo.netSource = in.getString(in.getColumnIndex("netsrc"));
+
         tmpMobInfo.tmp = in.getString(in.getColumnIndex("tmp"));
         return tmpMobInfo;
     }
@@ -519,6 +536,9 @@ public class c_Info implements Parcelable{
         params.put("nei", tmp);
         params.put("cdmaDbm", Integer.toString(cdmaDbm));
         params.put("cdmaEcio", Integer.toString(cdmaEcio));
+        params.put("wifissid", wifiSsid);
+        params.put("netsrc", netSource);
+
         params.put("tmp", "");
         long tmp =  db.insert(TABLE_3gTests, null, params);
         Log.d("Test",Long.toString(tmp));

@@ -88,6 +88,17 @@ class MyInfoArrayAdapter extends ArrayAdapter<c_Info> {
 
         txt_tmp = (TextView) rowView.findViewById(R.id.textViewModel);
         txt_tmp.setText(info.manuf.toUpperCase() + "/" + info.model);
+        txt_tmp = (TextView) rowView.findViewById(R.id.textViewNetSrce);
+        txt_tmp.setText(info.netSource);
+        txt_tmp = (TextView) rowView.findViewById(R.id.textViewWifiState);
+        if(info.wifiIsConnected) {
+            txt_tmp.setText("Connected");
+        } else {
+            txt_tmp.setText("Disconnected");
+        }
+        txt_tmp = (TextView) rowView.findViewById(R.id.textViewWifiSSID);
+        txt_tmp.setText(info.wifiSsid);
+
         txt_tmp = (TextView) rowView.findViewById(R.id.id_netclass);
         txt_tmp.setText(info.netClass+" - "+info.netClass2);
         txt_tmp = (TextView) rowView.findViewById(R.id.id_netname);

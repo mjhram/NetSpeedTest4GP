@@ -47,15 +47,44 @@
                                 android:layout_width="fill_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_columnSpan="2" />
-
                             <TextView
                                 android:text="Model:"
                                 android:layout_gravity="start"
                                 android:textColor="@android:color/white"
                                 />
+
                             <TextView
                                 android:text="---"
                                 android:id="@+id/textViewModel"
+                                android:textColor="@android:color/white" />
+                            <TextView
+                                android:text="Net Type:"
+                                android:layout_gravity="start"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="NA"
+                                android:id="@+id/textViewNetSrce"
+                                android:textColor="@android:color/white" />
+
+                            <TextView
+                                android:text="WiFi State:"
+                                android:layout_gravity="start"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/textViewWifiState"
+                                android:textColor="@android:color/white" />
+
+                            <TextView
+                                android:text="WiFi SSID:"
+                                android:layout_gravity="start"
+                                android:textColor="@android:color/white"
+                                />
+                            <TextView
+                                android:text="---"
+                                android:id="@+id/textViewWifiSSID"
                                 android:textColor="@android:color/white" />
                             <TextView
                                 android:text="Network Class:"

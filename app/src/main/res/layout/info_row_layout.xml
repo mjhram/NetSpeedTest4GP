@@ -32,6 +32,35 @@
             android:id="@+id/textViewModel"
             android:textColor="@android:color/white" />
         <TextView
+            android:text="Net Type:"
+            android:layout_gravity="start"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="NA"
+            android:id="@+id/textViewNetSrce"
+            android:textColor="@android:color/white" />
+
+        <TextView
+            android:text="WiFi State:"
+            android:layout_gravity="start"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/textViewWifiState"
+            android:textColor="@android:color/white" />
+
+        <TextView
+            android:text="WiFi SSID:"
+            android:layout_gravity="start"
+            android:textColor="@android:color/white"
+            />
+        <TextView
+            android:text="---"
+            android:id="@+id/textViewWifiSSID"
+            android:textColor="@android:color/white" />
+        <TextView
             android:text="Network Class:"
             android:textColor="@android:color/white"
             />
@@ -87,15 +116,7 @@
             android:textColor="@android:color/white"
             />
 
-        <TextView
-            android:text="DL Rate:"
-            android:textColor="@android:color/white"
-            />
-        <TextView
-            android:text="---"
-            android:id="@+id/rateText_id"
-            android:textColor="@android:color/white"
-            />
+
 
         <TextView
             android:text="DL Min,Max,Av:"
@@ -106,15 +127,7 @@
             android:id="@+id/id_minmaxrate"
             android:textColor="@android:color/white"
             />
-        <TextView
-            android:text="UL Rate:"
-            android:textColor="@android:color/white"
-            />
-        <TextView
-            android:text="---"
-            android:id="@+id/txRateText_id"
-            android:textColor="@android:color/white"
-            />
+
 
         <TextView
             android:text="UL Min,Max,Av"
