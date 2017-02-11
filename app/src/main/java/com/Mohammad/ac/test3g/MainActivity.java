@@ -73,7 +73,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     public TextView txt_netSrc;
 
     int serverResponseCode = 0;
-    String serverUri = "http://www.ttaxi1.com/3gtests";
+    String serverUri = "http://www.ajerlitaxi.com/3gtests";
     String upLoadServerUri = serverUri + "/en/upload.php";
     static final String MOB_INFO = "mobInfo";
     MainActivity thisActivity;

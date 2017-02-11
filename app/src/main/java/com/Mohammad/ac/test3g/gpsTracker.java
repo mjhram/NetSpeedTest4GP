@@ -57,7 +57,9 @@ public class gpsTracker implements LocationListener {
         }
 
         provider = locationManager.getBestProvider(criteria, true);
-        locationManager.requestLocationUpdates(provider,MIN_TIME_BW_UPDATES,MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+        if(provider != null) {
+            locationManager.requestLocationUpdates(provider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+        }
         /*
         // getting GPS status
         isGPSEnabled = locationManager

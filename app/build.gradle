@@ -30,8 +30,8 @@ android {
         applicationId 'com.Mohammad.ac.SpeedTest'
         minSdkVersion 14
         targetSdkVersion 19
-        versionName '1.8'
-        versionCode 18
+        versionName '2.0'
+        versionCode 20
     }
     buildTypes {
         release {
@@ -48,7 +48,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile 'com.cardiomood.android:android-widgets:0.1.1'
     compile files('libs/volley.jar')
-    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.6@aar') {
         transitive = true;
     }
 }
