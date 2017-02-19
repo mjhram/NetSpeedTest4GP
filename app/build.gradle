@@ -20,7 +20,7 @@ android {
         config {
             keyAlias 'mjhram'
             keyPassword '123456'
-            storeFile file('C:/Downloads/Android/keystore/keystore')
+            storeFile file('D:/Downloads/Android/keystore/keystore')
             storePassword '123456'
         }
     }
@@ -51,4 +51,5 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.6.6@aar') {
         transitive = true;
     }
+    compile 'fr.bmartel:jspeedtest:1.25'
 }

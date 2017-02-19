@@ -254,20 +254,7 @@
                             android:layout_marginTop="10dp"
                             />
 
-                        <Button
-                            android:textSize="25dp"
-                            android:paddingTop="8dp"
-                            android:paddingBottom="8dp"
-                            android:textColor="#ff000000"
-                            android:id="@+id/id_BtnTest"
-                            android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Temp: upload data"
-                            android:background="#ff99D9EA"
-                            android:layout_marginTop="10dp"
-                            android:onClick="onTestClick"
-                                android:visibility="gone"
-                            />
+
 
                         />
 
