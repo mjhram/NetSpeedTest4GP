@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -136,7 +137,11 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
 
 
         setContentView(R.layout.activity_main);
-        myUtility.OrientationUtils.lockOrientationPortrait(this);
+        //myUtility.OrientationUtils.lockOrientationPortrait(this);
+        //force orientation for phones only
+        if(getResources().getBoolean(R.bool.portrait_only)){
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
 
         btnStartTest = (Button) findViewById(R.id.btnStartTest);//
         btnHistory = (Button) findViewById(R.id.id_BtnHistory);//
