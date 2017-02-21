@@ -233,8 +233,11 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                     //localDownloadFileFromURL.execute(file_url);
 
                     //new UploadTest(MainActivity.this).execute(testDuration);
-                    uploadFileToURL localuploadFileToURL = new MainActivity.uploadFileToURL(MainActivity.this);
-                    localuploadFileToURL.execute(upLoadServerUri);
+                    //uploadFileToURL localuploadFileToURL = new MainActivity.uploadFileToURL(MainActivity.this);
+                    //localuploadFileToURL.execute(upLoadServerUri);
+
+                    Upload2 up2= new Upload2(MainActivity.this);
+                    up2.execute(upLoadServerUri);
                 } else {
                     Toast.makeText(MainActivity.this.thisActivity, "No Network Available", Toast.LENGTH_LONG).show();
                 }
@@ -896,6 +899,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
             byte[] buffer;
             int maxBufferSize = 20 * 1024;
             int contentLen = 1000*maxBufferSize;
+            boolean bFinished = false;
             try {
                 String strHeader = "Content-Disposition: form-data; name='ufile';filename='"
                         + fileName + "'" + lineEnd;
@@ -929,6 +933,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                     }
                     dos.flush();
                 } while (totalBytes2 < contentLen);
+                bFinished = true;
                 dos.writeBytes(lineEnd);
                 dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
                 int serverResponseCode = conn.getResponseCode();
@@ -941,27 +946,19 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 if(mobInfo.minTxRate == Double.MAX_VALUE) {
                     mobInfo.minTxRate = 0;
                 }
+                bFinished=false;
                 dbHandler.add3gTest(mobInfo);
                 mobInfo.upload(MainActivity.this);
             } catch (MalformedURLException ex) {
-                //dialog.dismiss();
-                runOnUiThread(new Runnable()
-                {
-                    public void run()
-                    {
-                        Toast.makeText(MainActivity.this, "MalformedURLException", Toast.LENGTH_LONG).show();
-                    }
-                });
                 ex.printStackTrace();
                 Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
+                if(bFinished) {
+                    mobInfo.upload(MainActivity.this);
+                }
             } catch (Exception e) {
-                /*runOnUiThread(new Runnable()
-                {
-                    public void run()
-                    {
-                        Toast.makeText(MainActivity.this, "Got Exception : see logcat ", Toast.LENGTH_LONG).show();
-                    }
-                });*/
+                if(bFinished) {
+                    mobInfo.upload(MainActivity.this);
+                }
                 e.printStackTrace();
                 Log.e("Upload Exception", e.getMessage(), e);
             }
