@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="jspeedtest-1.25">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/fr.bmartel/jspeedtest/1.25/79da798cd860e8278b430af13b90d669ca70555c/jspeedtest-1.25.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/fr.bmartel/jspeedtest/1.25/d6abf85955fb2976e4357e84398cd70a86adcf06/jspeedtest-1.25-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
