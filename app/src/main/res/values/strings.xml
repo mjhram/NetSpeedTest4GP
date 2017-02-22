@@ -6,4 +6,8 @@
     <string name="spdBtn_OnClick"></string>
     <string name="title_activity_about">AboutActivity</string>
     <string name="title_activity_android_download_file_by_progress_bar">AndroidDownloadFileByProgressBarActivity</string>
+    <string name="settings_screen_name">Settings</string>
+    <string name="pref_speedmax_summary">Select the maximum net speed expected (Mbps)</string>
+    <string name="pref_speedmax_title">Set Max Speed</string>
+
 </resources>

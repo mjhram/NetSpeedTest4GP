@@ -45,6 +45,28 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.Mohammad.ac.test3g.MainActivity" />
         </activity>
+        <activity
+            android:name=".Settings.MainPreferenceActivity"
+            android:configChanges="keyboardHidden|orientation|locale|layoutDirection"
+            android:label="@string/settings_screen_name"
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.Mohammad.ac.test3g.MainActivity" />
+
+            <intent-filter>
+                <action android:name="com.Mohammad.ac.test3g.MAIN_PREFS" />
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="authorize"
+                    android:scheme="gpslogger" />
+            </intent-filter>
+        </activity>
 
         <meta-data
             android:name="io.fabric.ApiKey"

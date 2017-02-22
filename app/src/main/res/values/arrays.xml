@@ -1,6 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="main_selection">
+        <item>Options</item>
         <item>About</item>
+
+    </string-array>
+
+    <string-array name="listArray">
+        <item>EDGE-3Mbps</item>
+        <item>3G-21Mbps</item>
+        <item>3G/4G-50Mbps</item>
+        <item>LTE-100Mbps</item>
+        <item>LTE-1Gbps</item>
+    </string-array>
+
+    <string-array name="listValues">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
     </string-array>
 </resources>

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.location.Location;
@@ -20,6 +21,8 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.telephony.CellLocation;
@@ -38,6 +41,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.Mohammad.ac.test3g.Settings.MainPreferenceActivity;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.crashlytics.android.Crashlytics;
 
@@ -80,6 +84,13 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     static final String MOB_INFO = "mobInfo";
     MainActivity thisActivity;
     databaseHandler dbHandler;
+    static int speedMeterMaxIdx;
+    double speedMeterMax[]=         {3.0, 21.0, 50.0, 100.0, 1000.0};
+    double speedMeterMajor[]=       {1.0, 5.0, 10.0, 25.0, 250.0};
+    double speedMeterRange4Red[]=   {0.2, 2.0, 4, 10.0, 100.0};
+    double speedMeterRange4Yellow[]={1.0, 5.0, 10.0, 25.0, 250.0};
+
+    //int speedMeterMinor[]={1, 1, 2, 5, 50};
 
     // button to show progress dialog
     Button btnStartTest;
@@ -103,7 +114,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     public SpeedometerGauge speedometer;
 
     private gpsTracker locationTracker;
-    private void initalGaugeView()
+    private void initalGaugeView(int speedIdx)
     {
         speedometer = ((SpeedometerGauge)findViewById(R.id.speedometer));
         speedometer.setLabelTextSize(22);
@@ -113,18 +124,31 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 return String.valueOf((int) Math.round(progress));
             }
         });
-        speedometer.setMaxSpeed(21.0D);
-        speedometer.setMajorTickStep(5.0D);
-        speedometer.setMinorTicks(1);
-        speedometer.addColoredRange(0.0D, 1.0D, Color.RED);
-        speedometer.addColoredRange(1.0D, 5.0D, Color.YELLOW);
-        speedometer.addColoredRange(5.0D, 21.0D, Color.GREEN);
+        setSpeedMeterMax(speedIdx);
+        //speedometer.setMaxSpeed(speedMeterMax[speedIdx]);//21.0D);
+        //speedometer.setMajorTickStep(speedMeterMajor[speedIdx]);//5.0D);
+        speedometer.setMinorTicks(4);
     }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putParcelable(MOB_INFO, mobInfo);
         super.onSaveInstanceState(savedInstanceState);
+    }
+
+    private int getSpeedMeterMaxIdx(){
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String speedMeterMaxIdxStr = SP.getString("speedmeterMax","1");//default is 1
+        int tmpInt = Integer.parseInt(speedMeterMaxIdxStr);
+        return tmpInt-1;
+    }
+
+    private void setSpeedMeterMax(int speedIdx) {
+        speedometer.setMaxSpeed(speedMeterMax[speedIdx]);//21.0D);
+        speedometer.setMajorTickStep(speedMeterMajor[speedIdx]);//5.0D);
+        speedometer.addColoredRange(0.0D, speedMeterRange4Red[speedIdx], Color.RED);
+        speedometer.addColoredRange(speedMeterRange4Red[speedIdx], speedMeterRange4Yellow[speedIdx], Color.YELLOW);
+        speedometer.addColoredRange(speedMeterRange4Yellow[speedIdx], speedMeterMax[speedIdx], Color.GREEN);
     }
 
     @Override
@@ -135,6 +159,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         dbHandler = new databaseHandler(this);
         locationTracker = new gpsTracker(this);
 
+        speedMeterMaxIdx = getSpeedMeterMaxIdx();
 
         setContentView(R.layout.activity_main);
         //myUtility.OrientationUtils.lockOrientationPortrait(this);
@@ -170,7 +195,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         this.txt_cdmaEcio = ((TextView)findViewById(R.id.id_cdmaEcio));
         this.listView = ((ListView)findViewById(R.id.drawerList));
         this.listView.setOnItemClickListener(this);
-        initalGaugeView();
+        initalGaugeView(speedMeterMaxIdx);
 
         btnHistory.setOnClickListener(new View.OnClickListener() {
               @Override
@@ -473,6 +498,12 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(wifiBroadcastReceiver, intentFilter);
+
+        int tmpInt = getSpeedMeterMaxIdx();
+        if(speedMeterMaxIdx != tmpInt) {
+            speedMeterMaxIdx = tmpInt;
+            setSpeedMeterMax(speedMeterMaxIdx);
+        }
     }
     /* —————————– */
     /* Start the PhoneState listener */
@@ -990,10 +1021,11 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     public void onItemClick(AdapterView<?> parent, View v, int position, long is)
     {
         String[] menuArray = getResources().getStringArray(R.array.main_selection);
-        if (menuArray[position].equalsIgnoreCase("About"))
-        {
+        if (menuArray[position].equalsIgnoreCase("About")) {
             Intent localIntent = new Intent(this, AboutActivity.class);
             startActivity(localIntent);
+        } else if (menuArray[position].equalsIgnoreCase("Options")) {
+            LaunchPreferenceScreen(MainPreferenceActivity.PreferenceConstants.GENERAL);
         }
     }
 
@@ -1024,5 +1056,14 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     public void onStatusChanged(String provider, int status, Bundle extras) {
     }
 
-
+    private void LaunchPreferenceScreen(final String whichFragment) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent targetActivity = new Intent(getApplicationContext(), MainPreferenceActivity.class);
+                targetActivity.putExtra("preference_fragment", whichFragment);
+                startActivity(targetActivity);
+            }
+        }, 250);
+    }
 }
