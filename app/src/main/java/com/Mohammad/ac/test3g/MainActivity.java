@@ -252,8 +252,8 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 if (MainActivity.this.isNetworkAvailable()) {
                     btnStartTest.setVisibility(View.GONE);
                     btnHistory.setVisibility(View.GONE);
-                    new DownloadTest(MainActivity.this).execute(testDuration);
-
+                    //new DownloadTest(MainActivity.this).execute(testDuration);
+                    new Download2(MainActivity.this).execute("");
                     //MainActivity.DownloadFileFromURL localDownloadFileFromURL = new MainActivity.DownloadFileFromURL(MainActivity.this);
                     //localDownloadFileFromURL.execute(file_url);
 
