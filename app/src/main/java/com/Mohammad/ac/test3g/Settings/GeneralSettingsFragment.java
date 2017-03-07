@@ -26,8 +26,7 @@ import android.util.Log;
 import com.Mohammad.ac.test3g.R;
 
 public class GeneralSettingsFragment extends PreferenceFragment
-        implements Preference.OnPreferenceClickListener,
-        Preference.OnPreferenceChangeListener
+        implements Preference.OnPreferenceChangeListener
 {
 
     //int aboutClickCounter = 0;
@@ -39,15 +38,17 @@ public class GeneralSettingsFragment extends PreferenceFragment
         addPreferencesFromResource(R.xml.pref_general);
 
         Preference prefListeners = findPreference("speedmeterMax");
-        prefListeners.setOnPreferenceClickListener(this);
         prefListeners.setOnPreferenceChangeListener(this);
 
-        /*Preference profileListeners = findPreference("user_profile");
-        profileListeners.setOnPreferenceClickListener(this);*/
+        prefListeners = findPreference("speedtestlen");
+        prefListeners.setOnPreferenceChangeListener(this);
     }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
+        if(preference.getKey().equalsIgnoreCase("speedmeterMax")){
+            //return true;
+        }
         final ListPreference list = (ListPreference) preference;
         int index = list.findIndexOfValue(newValue.toString());
         if (index != -1)
@@ -55,16 +56,5 @@ public class GeneralSettingsFragment extends PreferenceFragment
             Log.v("speed_pref", Integer.toString(index));
         }
         return true;
-    }
-
-    @Override
-    public boolean onPreferenceClick(Preference preference) {
-        if(preference.getKey().equalsIgnoreCase("speedmeterMax")){
-
-            return true;
-        } /*else if(preference.getKey().equalsIgnoreCase("user_profile")){
-            startActivity(new Intent(GeneralSettingsFragment.this.getActivity(), ProfileActivity.class));
-        }*/
-        return false;
     }
 }

@@ -14,11 +14,9 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.TrafficStats;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,13 +43,6 @@ import com.Mohammad.ac.test3g.Settings.MainPreferenceActivity;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.crashlytics.android.Crashlytics;
 
-import java.io.BufferedInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 import io.fabric.sdk.android.Fabric;
@@ -59,7 +50,8 @@ import io.fabric.sdk.android.Fabric;
 enum speedUnit {bps, Kbps, Mbps, Gbps};
 
 public class MainActivity extends Activity implements AdapterView.OnItemClickListener, LocationListener {
-    final static int testDuration = 15000;//test duration in msec
+    static int testDuration = 15000;//test duration in msec
+    final static int socketTimeOut = 5000;
 
     private Context mAppContext;
     static TelephonyManager        mTelephonyMgr;
@@ -78,9 +70,9 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     public TextView txt_wifiSsid;
     public TextView txt_netSrc;
 
-    int serverResponseCode = 0;
     String serverUri = "http://www.ajerlitaxi.com/3gtests";
     String upLoadServerUri = serverUri + "/en/upload.php";
+    String downloadServerUri = serverUri + "/files_db/8MB.bin";
     static final String MOB_INFO = "mobInfo";
     MainActivity thisActivity;
     databaseHandler dbHandler;
@@ -97,13 +89,6 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     Button btnHistory;
 
     public TextView txt_minmaxtx;
-    //public GaugeView mGaugeView2;
-
-    // File url to download
-    private static String file_url = //"http://download.thinkbroadband.com/20MB.zip";
-    //"http://ajerlitaxi.com/3gtests/files_db/20MB.zip";
-            "http://ajerlitaxi.com/3gtests/files_db/8MB.bin";
-
 
     private ListView listView;
     public TextView txtRxRateText;
@@ -136,11 +121,24 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         super.onSaveInstanceState(savedInstanceState);
     }
 
+    private String getDownloadUrl(){
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String tmpStr = SP.getString("downloadhost",downloadServerUri);
+        return tmpStr;
+    }
+
     private int getSpeedMeterMaxIdx(){
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        String speedMeterMaxIdxStr = SP.getString("speedmeterMax","1");//default is 1
+        String speedMeterMaxIdxStr = SP.getString("speedmeterMax","2");//default is 1
         int tmpInt = Integer.parseInt(speedMeterMaxIdxStr);
         return tmpInt-1;
+    }
+
+    private int getSpeedTestLen(){
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String speedLenStr = SP.getString("speedtestlen","15000");//default is 8sec
+        int tmpInt = Integer.parseInt(speedLenStr);
+        return tmpInt;
     }
 
     private void setSpeedMeterMax(int speedIdx) {
@@ -160,6 +158,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         locationTracker = new gpsTracker(this);
 
         speedMeterMaxIdx = getSpeedMeterMaxIdx();
+        testDuration = getSpeedTestLen();
 
         setContentView(R.layout.activity_main);
         //myUtility.OrientationUtils.lockOrientationPortrait(this);
@@ -252,17 +251,9 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
                 if (MainActivity.this.isNetworkAvailable()) {
                     btnStartTest.setVisibility(View.GONE);
                     btnHistory.setVisibility(View.GONE);
-                    //new DownloadTest(MainActivity.this).execute(testDuration);
-                    new Download2(MainActivity.this).execute("");
-                    //MainActivity.DownloadFileFromURL localDownloadFileFromURL = new MainActivity.DownloadFileFromURL(MainActivity.this);
-                    //localDownloadFileFromURL.execute(file_url);
 
-                    //new UploadTest(MainActivity.this).execute(testDuration);
-                    //uploadFileToURL localuploadFileToURL = new MainActivity.uploadFileToURL(MainActivity.this);
-                    //localuploadFileToURL.execute(upLoadServerUri);
-
-                    Upload2 up2= new Upload2(MainActivity.this);
-                    up2.execute(upLoadServerUri);
+                    new Download2(MainActivity.this).execute(getDownloadUrl());
+                    new Upload2(MainActivity.this).execute(upLoadServerUri);
                 } else {
                     Toast.makeText(MainActivity.this.thisActivity, "No Network Available", Toast.LENGTH_LONG).show();
                 }
@@ -504,6 +495,7 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
             speedMeterMaxIdx = tmpInt;
             setSpeedMeterMax(speedMeterMaxIdx);
         }
+        testDuration = getSpeedTestLen();
     }
     /* —————————– */
     /* Start the PhoneState listener */
@@ -699,322 +691,6 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
 
         }
 
-    }
-
-
-    class DownloadFileFromURL extends AsyncTask<String, Double, String> {
-        //String str_unit;
-        double rate/*, minRxRate, maxRxRate*/;
-        //MainActivity theActivity;
-        Context cntx;
-
-        public DownloadFileFromURL(Context c) {
-            cntx = c;
-        }
-        @Override
-        protected void onPreExecute() {
-        }
-
-
-
-        @Override
-        protected String doInBackground(String... f_url) {
-            int count;
-            long sum = 0;
-            long downloadTest_StrtTime = System.currentTimeMillis();
-            mobInfo.minRxRate = Double.MAX_VALUE;
-            mobInfo.maxRxRate = 0;
-            mobInfo.avRxRate = 0;
-            try {
-                boolean bDone = false;
-                for(int k=0; k<10 && bDone == false; k++) {
-                    URL url = new URL(f_url[0]);
-                    HttpURLConnection conection = (HttpURLConnection) url.openConnection();
-                    conection.setConnectTimeout(5000);
-                    conection.setReadTimeout(5000);
-                    conection.setDoOutput(false);
-                    conection.connect();
-
-                    // getting file length
-                    //int lenghtOfFile = conection.getContentLength();
-
-                    // input stream to read file - with 8k buffer
-                    InputStream input = new BufferedInputStream(url.openStream(), 8192);
-                    //InputStream input = url.openStream();
-                    // Output stream to write file
-                    //OutputStream output = new FileOutputStream("/sdcard/downloadedfile.jpg");
-
-                    //byte data[] = new byte[1024];
-                    //speedUnit unit = speedUnit.bps;
-                    long lastPublishProgressTime = System.currentTimeMillis();//can be intialized to 0;
-                    long initialTime = System.currentTimeMillis();//used for rate calc
-                    //long TotalTxBeforeTest = TrafficStats.getTotalTxBytes();
-                    long TotalRxBeforeTest = TrafficStats.getTotalRxBytes();
-                    long initialTotalRx = TrafficStats.getTotalRxBytes();
-                    do {
-                        byte data[];
-
-                        int dataCount = input.available();
-                        if (dataCount > 0) {
-                            data = new byte[dataCount];
-                        } else {
-                            data = new byte[1024];
-                        }
-                        if (((count = input.read(data)) == -1)) {
-                            break;
-                        }
-                        sum += count;
-                        Log.d("Download_TAG","Count:"+Integer.toString(count));
-                        Log.d("Download_TAG","dataCount:"+Integer.toString(dataCount));
-                        long AfterReadTime = System.currentTimeMillis();
-                        if (AfterReadTime - lastPublishProgressTime > 500) {//publish progress every xxx sec
-                            rate = 0.0;
-                            //long TotalTxAfterTest = TrafficStats.getTotalTxBytes();
-                            long TotalRxAfterTest = TrafficStats.getTotalRxBytes();
-                            double TimeDifference = AfterReadTime - lastPublishProgressTime;
-                            double rxDiff = TotalRxAfterTest - TotalRxBeforeTest;
-                            //double txDiff = TotalTxAfterTest - TotalTxBeforeTest;
-                            //if((rxDiff != 0) && (txDiff != 0))
-                            if (rxDiff != 0) {
-                                double rxBPS = (rxDiff / (TimeDifference / 1000.0)); // total rx bytes per second.
-                                //double txBPS = (txDiff / (TimeDifference / 1000.0)); // total tx bytes per second.
-                                rate = rxBPS * 8;
-                            } else {
-                                rate = 0.0;
-                            }
-
-                            double overallTimeDifference = AfterReadTime - initialTime;
-                            double overallRxDiff = TotalRxAfterTest - initialTotalRx;
-                            if (overallRxDiff != 0) {
-                                double rxBPS = (overallRxDiff / (overallTimeDifference / 1000.0)); // total rx bytes per second.
-                                mobInfo.avRxRate = rxBPS * 8;
-                            } else {
-                                mobInfo.avRxRate = 0.0;
-                            }
-                            if (AfterReadTime - downloadTest_StrtTime > MainActivity.testDuration) {
-                                bDone = true;
-                                break;
-                            }
-                            if (rate < mobInfo.minRxRate) {
-                                mobInfo.minRxRate = rate;
-                            }
-                            if (rate > mobInfo.maxRxRate) {
-                                mobInfo.maxRxRate = rate;
-                            }
-                            publishProgress(rate, mobInfo.avRxRate/*, mobInfo.minRxRate, mobInfo.maxRxRate*/);
-                            lastPublishProgressTime = System.currentTimeMillis();
-                            //TotalTxBeforeTest = TrafficStats.getTotalTxBytes();
-                            TotalRxBeforeTest = TrafficStats.getTotalRxBytes();
-                        }
-                    } while (true);
-                    if (mobInfo.minRxRate == Double.MAX_VALUE) {
-                        mobInfo.minRxRate = 0;
-                    }
-                    Log.d("speedtest_total", Long.toString(sum));
-                    // flushing output
-                    //output.flush();
-
-                    // closing streams
-                    //output.close();
-                    input.close();
-                    //mobInfo.upload();
-                    conection.disconnect();
-                }
-            } catch (Exception e) {
-                String eString = e.getMessage();
-                if (eString != null) {
-                    Log.e("Error-netSpeedTest: ", eString);
-                }
-                Log.d("err_speedtest_total:", Long.toString(sum));
-            }
-            return null;
-        }
-        /**
-         * Updating progress bar
-         * */
-        @Override
-        protected void onProgressUpdate(Double... progress) {
-            String str = MainActivity.getRateWithUnit(progress[0]);
-            MainActivity.this.txtRxRateText.setText(str);
-            MainActivity.this.txt_minmaxrx.setText("-"+", "+"-"+", "+MainActivity.getRateWithUnit(mobInfo.avRxRate));
-            MainActivity.this.speedometer.setSpeed(progress[0].doubleValue() / 1024.0D / 1024.0D,1000,0);
-        }
-
-        @Override
-        protected void onPostExecute(String file_url) {
-            MainActivity.this.speedometer.setSpeed(0.0D, true);
-            MainActivity.this.mobInfo.showInfo(MainActivity.this.thisActivity);
-        }
-
-    }
-
-    class uploadFileToURL extends AsyncTask<String, Double, String> {
-        //String str_unit;
-        //speedUnit unit;
-        long BeforeTime, initialTime, TotalTxBeforeTest, initialTotalTx;
-        //double rate, minTxRate, maxTxRate;
-        Context cntx;
-
-        public uploadFileToURL(Context c) {
-            cntx = c;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            //isDownloadUpload = true;
-        }
-
-        boolean uploadRate2(boolean init)//return true to stop
-        {
-            if(init == true) {
-                //unit = speedUnit.bps;
-                BeforeTime = System.currentTimeMillis();
-                initialTime = System.currentTimeMillis();
-                TotalTxBeforeTest = TrafficStats.getTotalTxBytes();
-                initialTotalTx = TrafficStats.getTotalTxBytes();
-                mobInfo.minTxRate = Double.MAX_VALUE;
-                mobInfo.maxTxRate = 0;
-                mobInfo.avTxRate = 0;
-                return false;
-            }
-
-            long AfterTime = System.currentTimeMillis();
-            if(AfterTime - BeforeTime > 500) {
-                double rate=0.0;
-                long TotalTxAfterTest = TrafficStats.getTotalTxBytes();
-                double TimeDifference = AfterTime - BeforeTime;
-                double txDiff = TotalTxAfterTest - TotalTxBeforeTest;
-                if(txDiff != 0) {
-                    double txBPS = (txDiff / (TimeDifference/1000.0)); // total tx bytes per second.
-                    rate = txBPS*8;
-                }
-                else {
-                    rate=0.0;
-                }
-                if(rate < mobInfo.minTxRate ) {
-                    mobInfo.minTxRate = rate;
-                }
-                if(rate > mobInfo.maxTxRate ){
-                    mobInfo.maxTxRate = rate;
-                }
-
-                double overallTimeDifference = AfterTime -initialTime;
-                double overallTxDiff = TotalTxAfterTest - initialTotalTx;
-                if(overallTxDiff != 0) {
-                    double txBPS = (overallTxDiff / (overallTimeDifference/1000.0)); // total tx bytes per second.
-                    mobInfo.avTxRate = txBPS*8;
-                }
-                else {
-                    mobInfo.avTxRate=0.0;
-                }
-
-                if(overallTimeDifference > MainActivity.testDuration) {
-                    return true;
-                }
-                publishProgress(rate, mobInfo.avTxRate/*, minTxRate, maxTxRate*/);
-                BeforeTime = System.currentTimeMillis();
-                TotalTxBeforeTest = TrafficStats.getTotalTxBytes();
-            }
-            return false;
-        }
-
-        @Override
-        protected String doInBackground(String... f_url) {
-            //int count;
-            String fileName = "tmp.bin";
-            HttpURLConnection conn = null;
-            DataOutputStream dos = null;
-            String lineEnd = "\r\n";
-            String twoHyphens = "--";
-            String boundary = "*****";
-            byte[] buffer;
-            int maxBufferSize = 20 * 1024;
-            int contentLen = 1000*maxBufferSize;
-            boolean bFinished = false;
-            try {
-                String strHeader = "Content-Disposition: form-data; name='ufile';filename='"
-                        + fileName + "'" + lineEnd;
-                URL url = new URL(f_url[0]);
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setDoInput(true); // Allow Inputs
-                conn.setDoOutput(true); // Allow Outputs
-                conn.setUseCaches(false); // Don't use a Cached Copy
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Connection", "Keep-Alive");
-                conn.setRequestProperty("ENCTYPE", "multipart/form-data");
-                conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-                conn.setRequestProperty("ufile", fileName);
-                int len = contentLen+strHeader.length()+11;//+Header
-                len += 13;//Footer
-                conn.setFixedLengthStreamingMode(len);
-                OutputStream oStream = conn.getOutputStream();
-                dos = new DataOutputStream(oStream);
-                dos.writeBytes(twoHyphens + boundary + lineEnd);
-                dos.writeBytes(strHeader);
-                dos.writeBytes(lineEnd);
-
-                buffer = new byte[maxBufferSize];
-                int totalBytes2 =0;
-                uploadRate2(true);
-                do {
-                    dos.write(buffer, 0, maxBufferSize);
-                    totalBytes2 += maxBufferSize;
-                    if(uploadRate2(false)) {
-                        break;
-                    }
-                    dos.flush();
-                } while (totalBytes2 < contentLen);
-                bFinished = true;
-                dos.writeBytes(lineEnd);
-                dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
-                int serverResponseCode = conn.getResponseCode();
-                String serverResponseMessage = conn.getResponseMessage();
-                Log.i("uploadFile", "HTTP Response is : "
-                        + serverResponseMessage + ": " + serverResponseCode);
-                dos.flush();
-                dos.close();
-                conn.disconnect();
-                if(mobInfo.minTxRate == Double.MAX_VALUE) {
-                    mobInfo.minTxRate = 0;
-                }
-                bFinished=false;
-                dbHandler.add3gTest(mobInfo);
-                mobInfo.upload(MainActivity.this);
-            } catch (MalformedURLException ex) {
-                ex.printStackTrace();
-                Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
-                if(bFinished) {
-                    mobInfo.upload(MainActivity.this);
-                }
-            } catch (Exception e) {
-                if(bFinished) {
-                    mobInfo.upload(MainActivity.this);
-                }
-                e.printStackTrace();
-                Log.e("Upload Exception", e.getMessage(), e);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Double... progress) {
-            String str = MainActivity.getRateWithUnit(progress[0]);
-            MainActivity.this.txtTxRateText.setText(str);
-            MainActivity.this.txt_minmaxtx.setText("-"+", "+"-"+", "+MainActivity.getRateWithUnit(mobInfo.avTxRate));
-            MainActivity.this.speedometer.setSpeed(progress[0].doubleValue() / 1024.0D / 1024.0D,1000,0);
-        }
-
-        /**
-         * After completing background task
-         * Dismiss the progress dialog
-         * **/
-        @Override
-        protected void onPostExecute(String file_url) {
-            speedometer.setSpeed(0.0D, true);
-            mobInfo.showInfo(MainActivity.this.thisActivity);
-            btnStartTest.setVisibility(View.VISIBLE);
-            btnHistory.setVisibility(View.VISIBLE);
-        }
     }
 
     @Override

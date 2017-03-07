@@ -6,8 +6,12 @@
     <string name="spdBtn_OnClick"></string>
     <string name="title_activity_about">AboutActivity</string>
     <string name="title_activity_android_download_file_by_progress_bar">AndroidDownloadFileByProgressBarActivity</string>
+    <!-- Options Screen-->
     <string name="settings_screen_name">Settings</string>
     <string name="pref_speedmax_summary">Select the maximum net speed expected (Mbps)</string>
-    <string name="pref_speedmax_title">Set Max Speed</string>
-
+    <string name="pref_speedmax_title">Set Gauge Max</string>
+    <string name="pref_testlen_summary">Select the length of the download/upload test</string>
+    <string name="pref_testlen_title">Set Test Length</string>
+    <string name="pref_cushost_title">Set Custom Host for tests</string>
+    <string name="pref_download_title">Set download Url</string>
 </resources>

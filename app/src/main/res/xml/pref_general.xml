@@ -9,6 +9,22 @@
         android:defaultValue="2"
         android:entries="@array/listArray"
         android:entryValues="@array/listValues" />
+    <ListPreference
+        android:title="@string/pref_testlen_title"
+        android:summary="@string/pref_testlen_summary"
+        android:key="speedtestlen"
+        android:defaultValue="2"
+        android:entries="@array/testlenListArray"
+        android:entryValues="@array/testlenListValues" />
+
+    <EditTextPreference
+        android:dialogMessage="Download URL"
+        android:title="Download URL"
+        android:summary="@string/pref_download_title"
+        android:key="downloadhost"
+        android:defaultValue="http://www.ajerlitaxi.com/3gtests/files_db/8MB.bin"
+        >
+    </EditTextPreference>
     <!-- Preference
         android:key="user_profile"
         android:summary="@string/pref_profile_summary"

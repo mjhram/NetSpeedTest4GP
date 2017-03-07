@@ -8,6 +8,9 @@ import android.view.View;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URI;
+
+import static com.Mohammad.ac.test3g.MainActivity.socketTimeOut;
 
 /**
  * Created by mohammad.haider on 021 2/21/2017.
@@ -88,15 +91,19 @@ public class Upload2 extends AsyncTask<String, Double, String> {
         //int count;
         int maxBufferSize = 20 * 1024;
         try {
+            URI uri = new URI(f_url[0]);
+            String host = uri.getHost();
+            String path = "/";//uri.getPath();
+
             Socket mSocket = new Socket();
-            mSocket.setSoTimeout(10000);
+            mSocket.setSoTimeout(socketTimeOut);
             mSocket.setReuseAddress(true);
             mSocket.setKeepAlive(true);
-            mSocket.connect(new InetSocketAddress("ajerlitaxi.com", 80));
+            mSocket.connect(new InetSocketAddress(host, 80));
             if (mSocket == null || mSocket.isClosed()) {
                 return null;
             }
-            final String head = "POST " + "/" + " HTTP/1.1\r\n" + "Host: " + "http://ajerlitaxi.com" + "\r\nAccept: " +
+            final String head = "POST " + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\nAccept: " +
                     "*/*\r\nContent-Length: " + 10000000 + "\r\n\r\n";
             OutputStream outStream = mSocket.getOutputStream();
             if (outStream == null) {

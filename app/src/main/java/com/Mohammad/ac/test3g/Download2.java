@@ -8,6 +8,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URI;
+
+import static com.Mohammad.ac.test3g.MainActivity.socketTimeOut;
 
 /**
  * Created by mohammad.haider on 023 2/23/2017.
@@ -30,23 +33,30 @@ class Download2 extends AsyncTask<String, Double, String> {
     @Override
     protected String doInBackground(String... f_url) {
         long sum = 0;
-        long downloadTest_StrtTime = System.currentTimeMillis();
+
+
         theActivity.mobInfo.minRxRate = Double.MAX_VALUE;
         theActivity.mobInfo.maxRxRate = 0;
         theActivity.mobInfo.avRxRate = 0;
         try {
             boolean bDone = false;
-            Socket mSocket = new Socket();
-            mSocket.setSoTimeout(10000);
-            mSocket.setReuseAddress(true);
-            mSocket.setKeepAlive(true);
-            mSocket.connect(new InetSocketAddress("ajerlitaxi.com", 80));
-            if (mSocket == null || mSocket.isClosed()) {
-                return null;
-            }
-            for(int k=0; k<1 && bDone == false; k++) {
+            URI uri = new URI(f_url[0]);
+            String host = uri.getHost();
+            String path = uri.getPath();
+            long downloadTest_StrtTime = System.currentTimeMillis();
+            for(int k=0; k<10 && bDone == false; k++)
+            {
+                Socket mSocket = new Socket();
+                mSocket.setSoTimeout(socketTimeOut);
+                mSocket.setReuseAddress(true);
+                mSocket.setKeepAlive(true);
+                mSocket.connect(new InetSocketAddress(host, 80));
+                if (mSocket == null || mSocket.isClosed()) {
+                    return null;
+                }
+
                 //the request
-                final String downloadRequest = "GET " + "/3gtests/files_db/8MB.bin" + " HTTP/1.1\r\n" + "Host: " + "ajerlitaxi.com" + "\r\n\r\n";
+                final String downloadRequest = "GET " + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\n\r\n";
 
                 OutputStream outStream = mSocket.getOutputStream();
                 if (outStream == null) {
@@ -108,8 +118,12 @@ class Download2 extends AsyncTask<String, Double, String> {
                         TotalRxBeforeTest = TrafficStats.getTotalRxBytes();
                     }
                 }
+                in.close();
+                outStream.close();
+                mSocket.close();
             }
-            mSocket.close();
+
+
             if (theActivity.mobInfo.minRxRate == Double.MAX_VALUE) {
                 theActivity.mobInfo.minRxRate = 0;
             }
