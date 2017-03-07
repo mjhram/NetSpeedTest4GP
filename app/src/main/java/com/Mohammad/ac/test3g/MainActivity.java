@@ -1,6 +1,5 @@
 package com.Mohammad.ac.test3g;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -22,7 +22,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.telephony.CellLocation;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
@@ -33,6 +37,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -49,7 +55,7 @@ import io.fabric.sdk.android.Fabric;
 
 enum speedUnit {bps, Kbps, Mbps, Gbps};
 
-public class MainActivity extends Activity implements AdapterView.OnItemClickListener, LocationListener {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, LocationListener {
     static int testDuration = 15000;//test duration in msec
     final static int socketTimeOut = 5000;
 
@@ -97,6 +103,9 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     public TextView txt_cdmaEcio;
     public TextView txt_neighboring;
     public SpeedometerGauge speedometer;
+
+    private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mDrawerToggle;
 
     private gpsTracker locationTracker;
     private void initalGaugeView(int speedIdx)
@@ -196,6 +205,30 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
         this.listView.setOnItemClickListener(this);
         initalGaugeView(speedMeterMaxIdx);
 
+        SetUpToolbar();
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, GetToolbar(),
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                //getActionBar().setTitle(mTitle);
+                //invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+
+            /** Called when a drawer has settled in a completely open state. */
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                //getActionBar().setTitle(mDrawerTitle);
+                //invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+
+        // Set the drawer toggle as the DrawerListener
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //getSupportActionBar().setHomeButtonEnabled(true);
+
         btnHistory.setOnClickListener(new View.OnClickListener() {
               @Override
               public void onClick(View v) {
@@ -278,10 +311,50 @@ public class MainActivity extends Activity implements AdapterView.OnItemClickLis
     }
 
     @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    public Toolbar GetToolbar(){
+        return (Toolbar)findViewById(R.id.toolbar);
+    }
+    public void SetUpToolbar(){
+        try{
+            Toolbar toolbar = GetToolbar();
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+            //Deprecated in Lollipop but required if targeting 4.x
+            //SpinnerAdapter spinnerAdapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.gps_main_views, R.layout.spinner_dropdown_item);
+            //getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+            //getSupportActionBar().setListNavigationCallbacks(spinnerAdapter, this);
+            //getSupportActionBar().setSelectedNavigationItem(GetUserSelectedNavigationItem());
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                Window window = getWindow();
+                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            }
+        }
+        catch(Exception ex){
+            //http://stackoverflow.com/questions/26657348/appcompat-v7-v21-0-0-causing-crash-on-samsung-devices-with-android-v4-2-2
+            Log.e("netspeed", ex.toString());
+        }
+
     }
 
     String isMobileEnabled(){

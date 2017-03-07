@@ -8,7 +8,7 @@
     android:layout_height="55dp"
     android:layout_width="match_parent"
     android:minHeight="?attr/actionBarSize"
-    android:background="#f7a122"
+    android:background="#5559f7"
     app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
     app:contentInsetStart="72dp">
 </android.support.v7.widget.Toolbar>

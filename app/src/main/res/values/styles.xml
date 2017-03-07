@@ -6,6 +6,9 @@
         parent="android:Theme"
         >
         <!-- Customize your theme here. -->
+        <item name="colorPrimary">#607099</item>
+        <item name="colorPrimaryDark">#404070</item>
     </style>
+
 
 </resources>
