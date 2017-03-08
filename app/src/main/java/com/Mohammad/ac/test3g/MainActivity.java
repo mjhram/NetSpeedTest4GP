@@ -165,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         thisActivity = this;
         dbHandler = new databaseHandler(this);
         locationTracker = new gpsTracker(this);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
 
         speedMeterMaxIdx = getSpeedMeterMaxIdx();
         testDuration = getSpeedTestLen();

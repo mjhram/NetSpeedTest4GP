@@ -13,7 +13,7 @@
         android:title="@string/pref_testlen_title"
         android:summary="@string/pref_testlen_summary"
         android:key="speedtestlen"
-        android:defaultValue="2"
+        android:defaultValue="8000"
         android:entries="@array/testlenListArray"
         android:entryValues="@array/testlenListValues" />
 
