@@ -16,7 +16,7 @@ public class AboutActivity
   
   public boolean onCreateOptionsMenu(Menu paramMenu)
   {
-    getMenuInflater().inflate(R.menu.menu_about, paramMenu);
+    //getMenuInflater().inflate(R.menu.menu_about, paramMenu);
     return true;
   }
   

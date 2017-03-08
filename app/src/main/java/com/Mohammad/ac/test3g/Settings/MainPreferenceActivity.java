@@ -63,9 +63,10 @@ public class MainPreferenceActivity extends AppCompatActivity{
 
     @Override
     public void onBackPressed() {
-       /*if(isFormValid()){
+       //if(isFormValid())
+       {
            super.onBackPressed();
-       }*/
+       }
     }
 
     @Override
@@ -73,10 +74,11 @@ public class MainPreferenceActivity extends AppCompatActivity{
 
         final int id = item.getItemId();
         /*if (id == android.R.id.home) {
-           return !isFormValid();
-        }
-        */
-        return false;
+            //NavUtils.navigateUpFromSameTask(this);
+            return false;
+        }*/
+
+        return super.onOptionsItemSelected(item);
     }
 
     public static class PreferenceConstants{

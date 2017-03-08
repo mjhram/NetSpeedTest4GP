@@ -50,7 +50,7 @@
             android:configChanges="keyboardHidden|orientation|locale|layoutDirection"
             android:label="@string/settings_screen_name"
             android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait">
+            >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.Mohammad.ac.test3g.MainActivity" />
