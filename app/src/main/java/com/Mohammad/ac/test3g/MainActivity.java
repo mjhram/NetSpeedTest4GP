@@ -129,6 +129,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         savedInstanceState.putParcelable(MOB_INFO, mobInfo);
         super.onSaveInstanceState(savedInstanceState);
     }
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        mobInfo = savedInstanceState.getParcelable(MOB_INFO);
+        mobInfo.showInfo(thisActivity);
+    }
 
     private String getDownloadUrl(){
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());

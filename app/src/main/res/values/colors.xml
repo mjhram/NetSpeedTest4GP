@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Customize your theme here. -->
+    <!--item name="colorPrimary">#607099</item>
+    <item name="colorPrimaryDark">#404070</item-->
+    <color name="colorPrimary">#555994</color>
+    <color name="colorPrimaryDark">#555994</color>
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="windowBackground">#FFFFFF</color>
+    <color name="navigationBarColor">#000000</color>
+    <color name="colorAccent">#FF80AB</color>
+</resources>

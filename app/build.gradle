@@ -52,4 +52,5 @@ dependencies {
         transitive = true;
     }
     compile 'fr.bmartel:jspeedtest:1.25'
+    compile 'com.android.support:design:22.2.1'
 }
