@@ -27,7 +27,11 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.CellIdentityLte;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoLte;
 import android.telephony.CellLocation;
+import android.telephony.CellSignalStrengthLte;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
@@ -311,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         /* Update the listener, and start it */
         MyListener   = new MyPhoneStateListener();
-        mTelephonyMgr.listen(MyListener ,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS | PhoneStateListener.LISTEN_CELL_LOCATION);
+        mTelephonyMgr.listen(MyListener ,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS | PhoneStateListener.LISTEN_CELL_LOCATION /*| PhoneStateListener.LISTEN_CELL_INFO*/);
         collectInitInfo();
         mobInfo.showInfo(thisActivity);
     }
@@ -579,31 +583,66 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     /* —————————– */
     /* Start the PhoneState listener */
     /* —————————– */
+    //private final static String LTE_SIGNAL_STRENGTH = "getLteSignalStrength";
+    private String getLTEsignalStrengthString(SignalStrength signalStrength)
+    {
+        String tmpStr = "";
+        if(Build.VERSION.SDK_INT > 17){
+            List<CellInfo> cellInfos = mTelephonyMgr.getAllCellInfo();
+            CellInfo cInfo = cellInfos.get(0);
+
+            if(cInfo instanceof CellInfoLte) {
+                //LTE
+                CellSignalStrengthLte ssLte = ((CellInfoLte) cInfo).getCellSignalStrength();
+                tmpStr += ssLte.getAsuLevel();
+                tmpStr += ssLte.getDbm();
+                tmpStr += ssLte.toString();
+            }
+        }
+        return tmpStr;
+    }
+
     private class MyPhoneStateListener extends PhoneStateListener
     {
         @Override
         public void onCellLocationChanged(CellLocation location)
         {
-            GsmCellLocation cellLocation = (GsmCellLocation) location;
-            if(cellLocation != null) {
-                mobInfo.cid = cellLocation.getCid();
-                mobInfo.cid_3g = mobInfo.cid & 0xffff;
-                mobInfo.rnc = (mobInfo.cid & 0xffff0000) >> 16;
-                mobInfo.lac = cellLocation.getLac();
+            mobInfo.netType = mTelephonyMgr.getNetworkType();
+            mobInfo.netClass = getNetworkClass(mobInfo.netType);
+            //show info
+            MainActivity.this.txt_netclass.setText(mobInfo.netClass + " - " + mobInfo.netClass2);
 
-                mobInfo.netType = mTelephonyMgr.getNetworkType();
-                mobInfo.netClass = getNetworkClass(mobInfo.netType);
-                //show info
-                MainActivity.this.txt_netclass.setText(mobInfo.netClass+" - "+mobInfo.netClass2);
-                if(mobInfo.netClass.equals("2G")) {
-                    MainActivity.this.txt_cellid.setText(""+mobInfo.cid);
+            if(location instanceof GsmCellLocation) {
+                GsmCellLocation cellLocation = (GsmCellLocation) location;
+                if (cellLocation != null) {
+                    mobInfo.cid = cellLocation.getCid();
+                    mobInfo.cid_3g = mobInfo.cid & 0xffff;
+                    mobInfo.rnc = (mobInfo.cid & 0xffff0000) >> 16;
+                    mobInfo.lac = cellLocation.getLac();
+
+                    if (mobInfo.netClass.equals("2G")) {
+                        MainActivity.this.txt_cellid.setText("" + mobInfo.cid);
+                        MainActivity.this.txt_rnc.setText("");
+                    } else {
+                        MainActivity.this.txt_cellid.setText(String.format("%04d", mobInfo.cid_3g));
+                        MainActivity.this.txt_rnc.setText("" + mobInfo.rnc);
+                    }
+                    MainActivity.this.txt_lac.setText(""+mobInfo.lac);
+                }
+            } else if(Build.VERSION.SDK_INT > 17 && mobInfo.netClass.equals("4G")) {
+                List<CellInfo> cellInfos = mTelephonyMgr.getAllCellInfo();
+                CellInfo cInfo = cellInfos.get(0);
+
+                if(cInfo instanceof CellInfoLte) {
+                    //LTE
+                    CellIdentityLte cellId = ((CellInfoLte) cInfo).getCellIdentity();
+                    mobInfo.lac = cellId.getTac();
+                    mobInfo.cid = cellId.getCi();
+                    MainActivity.this.txt_cellid.setText("" + mobInfo.cid);
                     MainActivity.this.txt_rnc.setText("");
-                }else {
-                    MainActivity.this.txt_cellid.setText(String.format("%04d",mobInfo.cid_3g));
-                    MainActivity.this.txt_rnc.setText(""+mobInfo.rnc);
+                    MainActivity.this.txt_lac.setText(mobInfo.lac);
                 }
             }
-
             /*if(mobInfo.rssi != oldRssi) {
                 if(mobInfo.rssi != 99 && mobInfo.rssi !=0) {
                     txt_rssi.setText("" + mobInfo.rssi);
@@ -647,9 +686,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     txt_rssi.setText("---");
                 }
             }
+            String ss = getLTEsignalStrengthString(signalStrength);
+            mobInfo.SignalStrengths += ">>LTE:" + ss;
+
             //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_NONE);
         }
+        /*@Override
+        public void onCellInfoChanged(List<CellInfo> cellInfo)
+        {
+            Log.i("CellListener","onCellInfoChanged(List<CellInfo> cellInfo) ");
+            super.onCellInfoChanged(cellInfo);
 
+            if(cellInfo == null) return;     // this always null here
+
+            for (CellInfo c : cellInfo) {
+                Log.i("CellListener"," c = "+c);
+            }
+        }*/
     };/* End of private Class */
 
 

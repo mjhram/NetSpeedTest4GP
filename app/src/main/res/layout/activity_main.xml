@@ -142,7 +142,7 @@
                                     android:textColor="@android:color/white"
                                     />
                                 <TextView
-                                    android:text="LAC:"
+                                    android:text="LAC/TAC:"
                                     android:textColor="@android:color/white"
                                     />
                                 <TextView

@@ -30,8 +30,8 @@ android {
         applicationId 'com.Mohammad.ac.SpeedTest'
         minSdkVersion 14
         targetSdkVersion 19
-        versionName '2.2'
-        versionCode 22
+        versionName '2.2.2'
+        versionCode 222
     }
     buildTypes {
         release {

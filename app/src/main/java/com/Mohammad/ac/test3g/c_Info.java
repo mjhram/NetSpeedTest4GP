@@ -561,7 +561,11 @@ public class c_Info implements Parcelable{
             theActivity.txt_rnc.setText("");
         }else {
             theActivity.txt_cellid.setText(String.format("%04d",cid_3g));
-            theActivity.txt_rnc.setText(""+rnc);
+            if(rnc==0) {
+                theActivity.txt_rnc.setText("");
+            }else {
+                theActivity.txt_rnc.setText("" + rnc);
+            }
         }
         theActivity.txt_lac.setText(""+lac);
         theActivity.txt_rssi.setText(""+rssi);
