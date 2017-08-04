@@ -80,9 +80,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public TextView txt_wifiSsid;
     public TextView txt_netSrc;
 
-    String serverUri = "http://www.ajerlitaxi.com/3gtests";
-    String upLoadServerUri = serverUri + "/en/upload.php";
-    String downloadServerUri = serverUri + "/files_db/8MB.bin";
+    String serverUri, upLoadServerUri, downloadServerUri;
+                    //"http://ec2-13-59-171-103.us-east-2.compute.amazonaws.com/3gtests";
+                     //"http://ec2-52-14-82-151.us-east-2.compute.amazonaws.com/3gtests";//"http://www.ajerlitaxi.com/3gtests";
+    //String upLoadServerUri = serverUri + "/en/upload.php";
+    //String downloadServerUri = serverUri + "/files_db/8MB.bin";
     static final String MOB_INFO = "mobInfo";
     MainActivity thisActivity;
     databaseHandler dbHandler;
@@ -172,6 +174,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         Fabric.with(this, new Crashlytics());
         thisActivity = this;
+        serverUri = getResources().getString(R.string.serverUrl);
+        upLoadServerUri = serverUri + "/en/upload.php";
+        downloadServerUri = serverUri + "/files_db/8MB.bin";
+
         dbHandler = new databaseHandler(this);
         locationTracker = new gpsTracker(this);
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
@@ -476,6 +482,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mobInfo.manuf = Build.MANUFACTURER;
         mobInfo.product = Build.PRODUCT;
         mobInfo.model = Build.MODEL;
+
 
         GsmCellLocation cellLocation = (GsmCellLocation) mTelephonyMgr.getCellLocation();
         if(cellLocation != null) {

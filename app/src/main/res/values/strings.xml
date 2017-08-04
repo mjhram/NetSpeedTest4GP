@@ -20,4 +20,10 @@
     <string name="pref_cushost_title">Set Custom Host for tests</string>
     <string name="pref_download_title">Set download Url</string>
 
+    <string name="serverUrl"        >http://ec2-13-59-171-103.us-east-2.compute.amazonaws.com/3gtests</string>
+    <string name="pref_download_url">http://ec2-13-59-171-103.us-east-2.compute.amazonaws.com/3gtests/files_db/8MB.bin</string>
+    <string name="privacyUrl"       >http://ec2-13-59-171-103.us-east-2.compute.amazonaws.com/about/netspeedprivacypolicy.html</string>
+
+
+
 </resources>

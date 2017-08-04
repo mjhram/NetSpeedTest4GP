@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-                  android:key="ajerlitaxiPassenger_preferences">
+                  android:key="tests_preferences">
 
     <ListPreference
         android:title="@string/pref_speedmax_title"
@@ -22,7 +22,7 @@
         android:title="Download URL"
         android:summary="@string/pref_download_title"
         android:key="downloadhost"
-        android:defaultValue="http://www.ajerlitaxi.com/3gtests/files_db/8MB.bin"
+        android:defaultValue="@string/pref_download_url"
         >
     </EditTextPreference>
     <!-- Preference

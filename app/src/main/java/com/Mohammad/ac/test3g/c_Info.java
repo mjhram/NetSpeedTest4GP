@@ -25,35 +25,35 @@ import java.util.Map;
  */
 public class c_Info implements Parcelable{
     //private MainActivity theActivity;
-    public String time;//used for sqliteDB timestamp
-    private String serverUri;
-    public String deviceId;
-    public String deviceId2;
-    public String manuf;
-    public String brand;
-    public String model;
-    public String product;
-    public String imsi;
-    public String imsi2;
-    public String phoneNumber;
-    public String phoneNumber2;
+    public String time="";//used for sqliteDB timestamp
+    private String serverUri="";
+    public String deviceId="";
+    public String deviceId2="";
+    public String manuf="";
+    public String brand="";
+    public String model="";
+    public String product="";
+    public String imsi="";
+    public String imsi2="";
+    public String phoneNumber="";
+    public String phoneNumber2="";
     //public String imei;
-    public String netOperator;
-    public String netOperator2;
-    public String netName;
-    public String netName2;
+    public String netOperator="";
+    public String netOperator2="";
+    public String netName="";
+    public String netName2="";
     public int netType;
     public int netType2;
-    public String netClass;
-    public String netClass2;
+    public String netClass="";
+    public String netClass2="";
     public int phoneType;
-    public String mobileState;
+    public String mobileState="";
     public int cid;
     public int cid_3g;
     public int rnc;
     public int lac;
     public int rssi;//signal Strength
-    public String SignalStrengths;
+    public String SignalStrengths="";
     public double rxRate, txRate;
     public double minRxRate;
     public double maxRxRate;
@@ -65,13 +65,13 @@ public class c_Info implements Parcelable{
     public double lat, lon;//Location info
     public int cdmaDbm;
     public int cdmaEcio;
-    public String neighboringCells;
+    public String neighboringCells="";
     //wifi info
     public boolean wifiIsConnected;
-    public String wifiSsid;
-    public String netSource; //mobile data, WiFi or NA
+    public String wifiSsid="";
+    public String netSource=""; //mobile data, WiFi or NA
 
-    public String tmp;
+    public String tmp="";
     final private String TABLE_3gTests = "netTests";
 
 

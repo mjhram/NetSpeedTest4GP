@@ -50,7 +50,7 @@
             android:textSize="20dp"/>
 
         <TextView
-            android:text="http://ajerlitaxi.com/about/netspeedprivacypolicy.html"
+            android:text="@string/privacyUrl"
             android:id="@+id/TextView1"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
