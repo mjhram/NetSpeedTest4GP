@@ -21,9 +21,15 @@
     <string name="pref_download_title">Set download Url</string>
 
     <string name="serverUrl"        >http://ec2-13-59-171-103.us-east-2.compute.amazonaws.com/3gtests</string>
-    <string name="pref_download_url">http://ec2-13-59-171-103.us-east-2.compute.amazonaws.com/3gtests/files_db/8MB.bin</string>
-    <string name="privacyUrl"       >http://ec2-13-59-171-103.us-east-2.compute.amazonaws.com/about/netspeedprivacypolicy.html</string>
-
+    <string name="pref_download_url">http://ipv4.download.thinkbroadband.com/10MB.zip</string >
+    <!-- string name="privacyUrl"       >http://ec2-13-59-171-103.us-east-2.compute.amazonaws.com/about/netspeedprivacypolicy.html</string -->
+    <string name="privacypolicy"    ><![CDATA[
+<p>This app collects device and network information as described below. The collected data are used for example for statistical purposes. These info are collected and stored locally and remotely (on server) for later access by the user.<br /> The info are not shared to any third party (though it may be shared in the future) without a concentration on specific user.</p>
+<h2>Collected Data</h2>
+<p>The collected data are related to device, network, ...etc. These include:<br /> - Device Id, IMSI, MSISDN, <br /> Device Id;<br /> Device Manufacturer;<br /> Device Brand;<br /> Device Model;<br /> Device Product;<br /> IMSI;<br /> Phone Number (MSISDN);<br /> Network Operator;<br /> Network Name;<br /> Network Type (GPRS, EDGE, CDMA, UMTS, HSPA, ...etc); which is used to decide if the network is 2G, 3G or 4G<br /> Phone Type; (GSM, CDMA, or SIP)<br /> Mobile State; Network Connectivity State<br /> 2G/3G LAC and Cell Id;<br /> RNC Id;<br /> RSSI;//signal Strength<br /> SignalStrengths; All the parameters related to signal strength such as Dbm and ECIO, SNR, BER for CDMA, EVDO which are not necessarily supported by the device and may have null data<br /> Geographical Location Latitude, longitute;//Location info<br /> Neighboring Cells;<br /> Wifi Info (SSID, Connectivity State)<br /> <br /> These information may not be stored on remote server and accordingly the user may use the locally stored info in that case.<br /> The app is using crashlytics for crash reporting. Crashlytics privacy policy is: <a href="http://try.crashlytics.com/terms/">Crashlytics Privacy Policy</a></p>
+<h2>Changes to the Privacy Policy</h2>
+<p>We reserve the right to change this policy at any time, so please re-visit this page frequently. Changes to this privacy policy are effective as of the stated "Last Update" and your continued use of the app on or after the Last Update date will constitute acceptance of, and agreement to be bound by, those changes.<br /> Last Update: Feb 2017</p>
+]]></string>
 
 
 </resources>

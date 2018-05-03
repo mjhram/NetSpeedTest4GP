@@ -24,6 +24,7 @@ import java.util.Map;
  * Created by mohammad.haider on 2/16/2015.
  */
 public class c_Info implements Parcelable{
+    boolean serverUp = false;
     //private MainActivity theActivity;
     public String time="";//used for sqliteDB timestamp
     private String serverUri="";
@@ -205,8 +206,10 @@ public class c_Info implements Parcelable{
     };
 
     void upload(Context cntx){
-        //new uploadInfo(cntx).execute();
-        add3GTest(cntx);
+        if(serverUp) {
+            //new uploadInfo(cntx).execute();
+            add3GTest(cntx);
+        }
     }
 
     public void add3GTest(final Context cntx)

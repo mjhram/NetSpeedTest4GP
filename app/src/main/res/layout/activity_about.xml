@@ -49,14 +49,23 @@
             android:textColor="#ff000000"
             android:textSize="20dp"/>
 
-        <TextView
-            android:text="@string/privacyUrl"
-            android:id="@+id/TextView1"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:autoLink="web">
-        </TextView>
+            <!-- TextView
+                android:id="@+id/TextView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:autoLink="web"
+                android:text="@string/privacyUrl"
+                android:visibility="gone"></TextView -->
 
-    </LinearLayout>
+            <TextView
+                android:id="@+id/editText2"
+                android:layout_width="match_parent"
+                android:layout_height="403dp"
+                android:ems="10"
+                android:inputType="textMultiLine"
+                android:scrollbars = "vertical"
+                 />
+
+        </LinearLayout>
     </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

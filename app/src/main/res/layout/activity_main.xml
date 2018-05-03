@@ -182,21 +182,24 @@
                                 <TextView
                                     android:text="UL Rate:"
                                     android:textColor="@android:color/white"
+                                    android:visibility="gone"
                                     />
                                 <TextView
                                     android:text="---"
                                     android:id="@+id/txRateText_id"
                                     android:textColor="@android:color/white"
+                                    android:visibility="gone"
                                     />
 
                                 <TextView
                                     android:text="UL Min,Max,Av"
                                     android:textColor="@android:color/white"
-                                    />
+                                    android:visibility="gone" />
                                 <TextView
                                     android:text="---"
                                     android:id="@+id/id_minmaxTxrate"
                                     android:textColor="@android:color/white"
+                                    android:visibility="gone"
                                     />
                                 <TextView
                                     android:text="latitude, longitude "

@@ -22,9 +22,11 @@ public class Upload2 extends AsyncTask<String, Double, String> {
     long BeforeTime, initialTime, TotalTxBeforeTest, initialTotalTx;
     //double rate, minTxRate, maxTxRate;
     MainActivity theActivity;
+    boolean disabled;
 
-    public Upload2(MainActivity activity) {
+    public Upload2(MainActivity activity, boolean disableUpload) {
         theActivity = activity;
+        disabled = disableUpload;
     }
 
     @Override
@@ -91,37 +93,39 @@ public class Upload2 extends AsyncTask<String, Double, String> {
         //int count;
         int maxBufferSize = 20 * 1024;
         try {
-            URI uri = new URI(f_url[0]);
-            String host = uri.getHost();
-            String path = "/";//uri.getPath();
+            if(!disabled) {
+                URI uri = new URI(f_url[0]);
+                String host = uri.getHost();
+                String path = "/";//uri.getPath();
 
-            Socket mSocket = new Socket();
-            mSocket.setSoTimeout(socketTimeOut);
-            mSocket.setReuseAddress(true);
-            mSocket.setKeepAlive(true);
-            mSocket.connect(new InetSocketAddress(host, 80));
-            if (mSocket == null || mSocket.isClosed()) {
-                return null;
-            }
-            final String head = "POST " + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\nAccept: " +
-                    "*/*\r\nContent-Length: " + 10000000 + "\r\n\r\n";
-            OutputStream outStream = mSocket.getOutputStream();
-            if (outStream == null) {
-                return null;
-            }
-            outStream.write(head.getBytes());
-            outStream.flush();
-
-            byte dummy[] =new byte[maxBufferSize];
-            uploadRate2(true);
-            while(true){
-                outStream.write(dummy);
-                outStream.flush();
-                if(uploadRate2(false)) {
-                    break;
+                Socket mSocket = new Socket();
+                mSocket.setSoTimeout(socketTimeOut);
+                mSocket.setReuseAddress(true);
+                mSocket.setKeepAlive(true);
+                mSocket.connect(new InetSocketAddress(host, 80));
+                if (mSocket == null || mSocket.isClosed()) {
+                    return null;
                 }
+                final String head = "POST " + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\nAccept: " +
+                        "*/*\r\nContent-Length: " + 10000000 + "\r\n\r\n";
+                OutputStream outStream = mSocket.getOutputStream();
+                if (outStream == null) {
+                    return null;
+                }
+                outStream.write(head.getBytes());
+                outStream.flush();
+
+                byte dummy[] = new byte[maxBufferSize];
+                uploadRate2(true);
+                while (true) {
+                    outStream.write(dummy);
+                    outStream.flush();
+                    if (uploadRate2(false)) {
+                        break;
+                    }
+                }
+                mSocket.close();
             }
-            mSocket.close();
             if(theActivity.mobInfo.minTxRate == Double.MAX_VALUE) {
                 theActivity.mobInfo.minTxRate = 0;
             }

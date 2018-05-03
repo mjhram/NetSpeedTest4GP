@@ -3,8 +3,11 @@ package com.Mohammad.ac.test3g;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 public class AboutActivity
   extends AppCompatActivity
@@ -13,6 +16,14 @@ public class AboutActivity
   {
     super.onCreate(paramBundle);
     setContentView(R.layout.activity_about);
+    TextView tvDocument = findViewById(R.id.editText2);
+    String bodyData =getResources().getString(R.string.privacypolicy);
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+      tvDocument.setText(Html.fromHtml(bodyData,Html.FROM_HTML_MODE_LEGACY));
+    } else {
+      tvDocument.setText(Html.fromHtml(bodyData));
+    }
+    tvDocument.setMovementMethod(new LinkMovementMethod());
 
     Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);

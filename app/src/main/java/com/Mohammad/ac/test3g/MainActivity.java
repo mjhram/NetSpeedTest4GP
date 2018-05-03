@@ -141,6 +141,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mobInfo.showInfo(thisActivity);
     }
 
+    private String checkVer(){
+        SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String tmpStr = SP.getString("ver","1.0");
+        String ver="1.0";
+        if(!tmpStr.equals(ver)) {
+            SP.edit().remove("downloadhost").apply();
+            SP.edit().putString("ver",ver).apply();
+            tmpStr = ver;
+        }
+
+        return tmpStr;
+    }
     private String getDownloadUrl(){
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         String tmpStr = SP.getString("downloadhost",downloadServerUri);
@@ -176,11 +188,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         thisActivity = this;
         serverUri = getResources().getString(R.string.serverUrl);
         upLoadServerUri = serverUri + "/en/upload.php";
-        downloadServerUri = serverUri + "/files_db/8MB.bin";
+        downloadServerUri = "http://ipv4.download.thinkbroadband.com/10MB.zip";//serverUri + "/files_db/8MB.bin";
 
         dbHandler = new databaseHandler(this);
         locationTracker = new gpsTracker(this);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+
+        //PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+        checkVer();
 
         speedMeterMaxIdx = getSpeedMeterMaxIdx();
         testDuration = getSpeedTestLen();
@@ -255,8 +269,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                   } else {
                       new AlertDialog.Builder(MainActivity.this)
                               .setTitle("History")
-                              .setMessage("There are no local History records. open web history?")
-                              .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                              .setMessage("There are no local History records")//. open web history?")
+                              /*.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                   public void onClick(DialogInterface dialog, int which) {
                                       // continue with delete
                                       if (mobInfo.deviceId == null) {
@@ -268,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                                       i.setData(Uri.parse(url));
                                       startActivity(i);
                                   }
-                              })
+                              })*/
                               .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
                                   public void onClick(DialogInterface dialog, int which) {
                                       // do nothing
@@ -302,7 +316,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     btnHistory.setVisibility(View.GONE);
 
                     new Download2(MainActivity.this).execute(getDownloadUrl());
-                    new Upload2(MainActivity.this).execute(upLoadServerUri);
+                    new Upload2(MainActivity.this, true).execute(upLoadServerUri);
                 } else {
                     Toast.makeText(MainActivity.this.thisActivity, "No Network Available", Toast.LENGTH_LONG).show();
                 }
@@ -596,14 +610,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String tmpStr = "";
         if(Build.VERSION.SDK_INT > 17){
             List<CellInfo> cellInfos = mTelephonyMgr.getAllCellInfo();
-            CellInfo cInfo = cellInfos.get(0);
+            if(cellInfos.size() !=0) {
+                CellInfo cInfo = cellInfos.get(0);
 
-            if(cInfo instanceof CellInfoLte) {
-                //LTE
-                CellSignalStrengthLte ssLte = ((CellInfoLte) cInfo).getCellSignalStrength();
-                tmpStr += ssLte.getAsuLevel();
-                tmpStr += ssLte.getDbm();
-                tmpStr += ssLte.toString();
+                if (cInfo instanceof CellInfoLte) {
+                    //LTE
+                    CellSignalStrengthLte ssLte = ((CellInfoLte) cInfo).getCellSignalStrength();
+                    tmpStr += ssLte.getAsuLevel();
+                    tmpStr += ssLte.getDbm();
+                    tmpStr += ssLte.toString();
+                }
             }
         }
         return tmpStr;
@@ -638,16 +654,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             } else if(Build.VERSION.SDK_INT > 17 && mobInfo.netClass.equals("4G")) {
                 List<CellInfo> cellInfos = mTelephonyMgr.getAllCellInfo();
-                CellInfo cInfo = cellInfos.get(0);
+                if(cellInfos.size() != 0) {
+                    CellInfo cInfo = cellInfos.get(0);
 
-                if(cInfo instanceof CellInfoLte) {
-                    //LTE
-                    CellIdentityLte cellId = ((CellInfoLte) cInfo).getCellIdentity();
-                    mobInfo.lac = cellId.getTac();
-                    mobInfo.cid = cellId.getCi();
-                    MainActivity.this.txt_cellid.setText("" + mobInfo.cid);
-                    MainActivity.this.txt_rnc.setText("");
-                    MainActivity.this.txt_lac.setText(mobInfo.lac);
+                    if (cInfo instanceof CellInfoLte) {
+                        //LTE
+                        CellIdentityLte cellId = ((CellInfoLte) cInfo).getCellIdentity();
+                        mobInfo.lac = cellId.getTac();
+                        mobInfo.cid = cellId.getCi();
+                        MainActivity.this.txt_cellid.setText("" + mobInfo.cid);
+                        MainActivity.this.txt_rnc.setText("");
+                        MainActivity.this.txt_lac.setText(mobInfo.lac);
+                    }
                 }
             }
             /*if(mobInfo.rssi != oldRssi) {

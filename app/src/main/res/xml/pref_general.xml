@@ -22,7 +22,7 @@
         android:title="Download URL"
         android:summary="@string/pref_download_title"
         android:key="downloadhost"
-        android:defaultValue="@string/pref_download_url"
+        android:defaultValue="http://ipv4.download.thinkbroadband.com/10MB.zip"
         >
     </EditTextPreference>
     <!-- Preference
