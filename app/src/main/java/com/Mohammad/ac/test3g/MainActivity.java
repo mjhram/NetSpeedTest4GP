@@ -1,12 +1,13 @@
 package com.Mohammad.ac.test3g;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
@@ -21,18 +22,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.telephony.CellIdentityLte;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoLte;
 import android.telephony.CellLocation;
 import android.telephony.CellSignalStrengthLte;
-import android.telephony.NeighboringCellInfo;
 import android.telephony.PhoneStateListener;
 import android.telephony.SignalStrength;
 import android.telephony.TelephonyManager;
@@ -49,11 +43,23 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.Mohammad.ac.test3g.Settings.MainPreferenceActivity;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
-import java.util.List;
 
-enum speedUnit {bps, Kbps, Mbps, Gbps};
+import java.util.List;
+import java.util.Locale;
+
+enum speedUnit {bps, Kbps, Mbps, Gbps}
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, LocationListener {
     static int testDuration = 15000;//test duration in msec
@@ -77,10 +83,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public TextView txt_netSrc;
 
     String serverUri, upLoadServerUri, downloadServerUri;
-                    //"http://ec2-13-59-171-103.us-east-2.compute.amazonaws.com/3gtests";
-                     //"http://ec2-52-14-82-151.us-east-2.compute.amazonaws.com/3gtests";//"http://www.ajerlitaxi.com/3gtests";
-    //String upLoadServerUri = serverUri + "/en/upload.php";
-    //String downloadServerUri = serverUri + "/files_db/8MB.bin";
     static final String MOB_INFO = "mobInfo";
     MainActivity thisActivity;
     databaseHandler dbHandler;
@@ -90,9 +92,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     double speedMeterRange4Red[]=   {0.2, 2.0, 4, 10.0, 100.0};
     double speedMeterRange4Yellow[]={1.0, 5.0, 10.0, 25.0, 250.0};
 
-    //int speedMeterMinor[]={1, 1, 2, 5, 50};
-
-    // button to show progress dialog
     Button btnStartTest;
     Button btnHistory;
 
@@ -110,6 +109,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ActionBarDrawerToggle mDrawerToggle;
 
     private gpsTracker locationTracker;
+
+    private static final int PERMISSION_REQUEST_CODE = 100;
+    private final String[] REQUIRED_PERMISSIONS = new String[]{
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
+
     private void initalGaugeView(int speedIdx)
     {
         speedometer = ((SpeedometerGauge)findViewById(R.id.speedometer));
@@ -121,8 +128,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
         setSpeedMeterMax(speedIdx);
-        //speedometer.setMaxSpeed(speedMeterMax[speedIdx]);//21.0D);
-        //speedometer.setMajorTickStep(speedMeterMajor[speedIdx]);//5.0D);
         speedometer.setMinorTicks(4);
     }
 
@@ -134,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         mobInfo = savedInstanceState.getParcelable(MOB_INFO);
-        mobInfo.showInfo(thisActivity);
+        if (mobInfo != null) mobInfo.showInfo(thisActivity);
     }
 
     private String checkVer(){
@@ -151,8 +156,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
     private String getDownloadUrl(){
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        String tmpStr = SP.getString("downloadhost",downloadServerUri);
-        return tmpStr;
+        return SP.getString("downloadhost",downloadServerUri);
     }
 
     private int getSpeedMeterMaxIdx(){
@@ -165,8 +169,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private int getSpeedTestLen(){
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         String speedLenStr = SP.getString("speedtestlen","15000");//default is 8sec
-        int tmpInt = Integer.parseInt(speedLenStr);
-        return tmpInt;
+        return Integer.parseInt(speedLenStr);
     }
 
     private void setSpeedMeterMax(int speedIdx) {
@@ -183,28 +186,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         thisActivity = this;
         serverUri = getResources().getString(R.string.serverUrl);
         upLoadServerUri = serverUri + "/en/upload.php";
-        downloadServerUri = "http://ipv4.download.thinkbroadband.com/10MB.zip";//serverUri + "/files_db/8MB.bin";
+        downloadServerUri = "http://ipv4.download.thinkbroadband.com/10MB.zip";
 
         dbHandler = new databaseHandler(this);
-        locationTracker = new gpsTracker(this);
 
-        //PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         checkVer();
 
         speedMeterMaxIdx = getSpeedMeterMaxIdx();
         testDuration = getSpeedTestLen();
 
         setContentView(R.layout.activity_main);
-        //myUtility.OrientationUtils.lockOrientationPortrait(this);
-        //force orientation for phones only
         if(getResources().getBoolean(R.bool.portrait_only)){
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
 
-        btnStartTest = (Button) findViewById(R.id.btnStartTest);//
-        btnHistory = (Button) findViewById(R.id.id_BtnHistory);//
-        //btnUpdate = (Button) findViewById(R.id.btnUpdate);
-        //btnUpload = (Button) findViewById(R.id.btnUpload);
+        btnStartTest = (Button) findViewById(R.id.btnStartTest);
+        btnHistory = (Button) findViewById(R.id.id_BtnHistory);
         txt_model = (TextView) findViewById(R.id.textViewModel);
         txt_netclass = (TextView) findViewById(R.id.id_netclass);
         txt_netname = (TextView) findViewById(R.id.id_netname);
@@ -213,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         txt_lac = (TextView) findViewById(R.id.id_lac);
         txt_rssi = (TextView) findViewById(R.id.id_rssi);
         txt_minmaxrx = (TextView) findViewById(R.id.id_minmaxrate);
-        txtRxRateText = (TextView) findViewById(R.id.rateText_id);//
+        txtRxRateText = (TextView) findViewById(R.id.rateText_id);
         txt_latitude = (TextView) findViewById(R.id.id_lat);
         txtTxRateText = (TextView) findViewById(R.id.txRateText_id);
         txt_minmaxtx = (TextView) findViewById(R.id.id_minmaxTxrate);
@@ -221,7 +218,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         txt_wifiState = (TextView) findViewById(R.id.textViewWifiState);
         txt_wifiSsid = (TextView) findViewById(R.id.textViewWifiSSID);
         txt_netSrc = (TextView) findViewById(R.id.textViewNetSrce);
-        //mGaugeView2 = (GaugeView) findViewById(R.id.gauge_view2);
 
         this.txt_neighboring = ((TextView)findViewById(R.id.id_neighbors));
         this.txt_cdmaDbm = ((TextView)findViewById(R.id.id_cdmaDbm));
@@ -233,60 +229,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         SetUpToolbar();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, GetToolbar(),
-                R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
-            /** Called when a drawer has settled in a completely closed state. */
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                //getActionBar().setTitle(mTitle);
-                //invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-            }
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 
-            /** Called when a drawer has settled in a completely open state. */
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                //getActionBar().setTitle(mDrawerTitle);
-                //invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
-            }
-        };
-
-        // Set the drawer toggle as the DrawerListener
         mDrawerLayout.addDrawerListener(mDrawerToggle);
-        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //getSupportActionBar().setHomeButtonEnabled(true);
 
         btnHistory.setOnClickListener(new View.OnClickListener() {
               @Override
               public void onClick(View v) {
                   if(dbHandler.get3gTestsCount() !=0) {
-                      //local history instead of site history
                       Intent myIntent = new Intent(MainActivity.this, InfoListActivity.class);
                       MainActivity.this.startActivity(myIntent);
                   } else {
                       new AlertDialog.Builder(MainActivity.this)
                               .setTitle("History")
-                              .setMessage("There are no local History records")//. open web history?")
-                              /*.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                                  public void onClick(DialogInterface dialog, int which) {
-                                      // continue with delete
-                                      if (mobInfo.deviceId == null) {
-                                          collectInitInfo();
-                                          mobInfo.showInfo(thisActivity);
-                                      }
-                                      String url = serverUri + "/en/index.php?dev=" + mobInfo.deviceId + "&ver=Feb12";
-                                      Intent i = new Intent(Intent.ACTION_VIEW);
-                                      i.setData(Uri.parse(url));
-                                      startActivity(i);
-                                  }
-                              })*/
-                              .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                                  public void onClick(DialogInterface dialog, int which) {
-                                      // do nothing
-                                  }
-                              })
+                              .setMessage("There are no local History records")
+                              .setNegativeButton(android.R.string.no, null)
                               .setIcon(android.R.drawable.ic_dialog_alert)
                               .show();
                   }
-                  /**/
               }
         });
 
@@ -305,7 +265,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
                 collectInitInfo();
                 mobInfo.showInfo(thisActivity);
-                // starting new Async Task
                 if (MainActivity.this.isNetworkAvailable()) {
                     btnStartTest.setVisibility(View.GONE);
                     btnHistory.setVisibility(View.GONE);
@@ -320,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         if (savedInstanceState != null) {
             mobInfo = savedInstanceState.getParcelable(MOB_INFO);
-            mobInfo.showInfo(thisActivity);
+            if (mobInfo != null) mobInfo.showInfo(thisActivity);
         } else if(mobInfo == null) {
             mobInfo = new c_Info(serverUri);
         }
@@ -328,17 +287,102 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mAppContext = getApplicationContext();
         mTelephonyMgr = ( TelephonyManager )getSystemService(Context.TELEPHONY_SERVICE);
 
-        /* Update the listener, and start it */
-        MyListener   = new MyPhoneStateListener();
-        mTelephonyMgr.listen(MyListener ,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS | PhoneStateListener.LISTEN_CELL_LOCATION /*| PhoneStateListener.LISTEN_CELL_INFO*/);
+        if (checkPermissions()) {
+            startAppLogic();
+        } else {
+            requestPermissions();
+        }
+    }
+
+    private boolean checkPermissions() {
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (checkPermissions()) {
+                startAppLogic();
+            } else {
+                Toast.makeText(this, "Permissions are required for this app to function", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void startAppLogic() {
+        locationTracker = new gpsTracker(this);
+        MyListener = new MyPhoneStateListener();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+            mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS | PhoneStateListener.LISTEN_CELL_LOCATION);
+        }
         collectInitInfo();
         mobInfo.showInfo(thisActivity);
+    }
+
+    private void resumeAppLogic() {
+        progressReceiver receiver = new progressReceiver();
+        IntentFilter filter= new IntentFilter("com.Mohammad.ac.test3g.PROGRESS");
+        LocalBroadcastManager.getInstance(this).registerReceiver (receiver, filter);
+
+        filter= new IntentFilter("com.Mohammad.ac.test3g.U_PROGRESS");
+        LocalBroadcastManager.getInstance(this).registerReceiver (receiver, filter);
+
+        filter= new IntentFilter("com.Mohammad.ac.test3g.DONE");
+        LocalBroadcastManager.getInstance(this).registerReceiver (receiver, filter);
+        
+        if (locationTracker != null) {
+            locationTracker.regProviders();
+        }
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(wifiBroadcastReceiver, intentFilter);
+
+        int tmpInt = getSpeedMeterMaxIdx();
+        if(speedMeterMaxIdx != tmpInt) {
+            speedMeterMaxIdx = tmpInt;
+            setSpeedMeterMax(speedMeterMaxIdx);
+        }
+        testDuration = getSpeedTestLen();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        if (checkPermissions()) {
+            resumeAppLogic();
+        }
+    }
+
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
+        if (locationTracker != null) {
+            locationTracker.unregProviders();
+        }
+        try {
+            unregisterReceiver(wifiBroadcastReceiver);
+        } catch (Exception e) {
+            // ignore
+        }
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
         mDrawerToggle.syncState();
     }
 
@@ -350,8 +394,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -362,13 +404,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         try{
             Toolbar toolbar = GetToolbar();
             setSupportActionBar(toolbar);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-
-            //Deprecated in Lollipop but required if targeting 4.x
-            //SpinnerAdapter spinnerAdapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.gps_main_views, R.layout.spinner_dropdown_item);
-            //getSupportActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-            //getSupportActionBar().setListNavigationCallbacks(spinnerAdapter, this);
-            //getSupportActionBar().setSelectedNavigationItem(GetUserSelectedNavigationItem());
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayShowTitleEnabled(false);
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 Window window = getWindow();
@@ -376,10 +414,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         }
         catch(Exception ex){
-            //http://stackoverflow.com/questions/26657348/appcompat-v7-v21-0-0-causing-crash-on-samsung-devices-with-android-v4-2-2
             Log.e("netspeed", ex.toString());
         }
-
     }
 
     String isMobileEnabled(){
@@ -388,13 +424,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if(info == null) {
             return "";
         } else {
-            //mob_avail = info.isAvailable();
-            NetworkInfo.State state;
-            //if(mob_avail)
-            {
-                state = info.getState();
-            }
-            return state.toString();
+            return info.getState().toString();
         }
     }
 
@@ -432,79 +462,35 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void collectInitInfo() {
         mobInfo.neighboringCells = "";
-        /*
-        List<NeighboringCellInfo> neighborCells = mTelephonyMgr.getNeighboringCellInfo();
-        if(neighborCells!=null && neighborCells.size() > 0) {
-            mobInfo.neighboringCells = "Neighboring List- Lac : Cid : PSC : RSSI\n";
-            for(NeighboringCellInfo aCell : neighborCells) {
-                int k = aCell.getRssi();
-                String str2;
-                if (k == 99) {
-                    str2 = "Unknown RSSI";
-                } else if (getNetworkClass(aCell.getNetworkType()) == "2G") {
-                    str2 = String.valueOf(-113 + 2 * k) + " dBm";
-                } else {
-                    str2 = String.valueOf(k) + " dBm";
-                }
-                mobInfo.neighboringCells += String.valueOf(aCell.getLac()) + " : " + String.valueOf(aCell.getCid()) + " : " + String.valueOf((aCell.getPsc()) + " : " + str2 + "\n");
-            }
-        }
-        */
         txt_neighboring.setText(mobInfo.neighboringCells);
-        //for Dual SIM
-        /*myDualSim myDualSimInfo = myDualSim.getInstance(this);
-        if(myDualSimInfo.isDualSIM()) {
-            mobInfo.deviceId=myDualSimInfo.getImeiSIM1();
-            mobInfo.imsi=myDualSimInfo.imsi1;
-            mobInfo.phoneNumber = myDualSimInfo.phoneNumber1;
-            mobInfo.netType = myDualSimInfo.netType1;
-            mobInfo.netClass = getNetworkClass(mobInfo.netType);
-            mobInfo.netOperator = myDualSimInfo.netOperator1;
-            mobInfo.netName = myDualSimInfo.netName1;
-
-            mobInfo.deviceId2=myDualSimInfo.getImeiSIM2();
-            mobInfo.imsi2=myDualSimInfo.imsi2;
-            mobInfo.phoneNumber2 = myDualSimInfo.phoneNumber2;
-            mobInfo.netType2 = myDualSimInfo.netType2;
-            mobInfo.netClass2 = getNetworkClass(mobInfo.netType2);
-            mobInfo.netOperator2 = myDualSimInfo.netOperator2;
-            mobInfo.netName2 = myDualSimInfo.netName2;
-        } else */
         {
-            mobInfo.deviceId = ""; // mTelephonyMgr.getDeviceId();
-            mobInfo.imsi = ""; // mTelephonyMgr.getSubscriberId();
-            mobInfo.phoneNumber = ""; // mTelephonyMgr.getLine1Number();
-            mobInfo.netType = mTelephonyMgr.getNetworkType();
+            mobInfo.deviceId = ""; 
+            mobInfo.imsi = ""; 
+            mobInfo.phoneNumber = ""; 
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                mobInfo.netType = mTelephonyMgr.getNetworkType();
+            }
             mobInfo.netClass = getNetworkClass(mobInfo.netType);
             mobInfo.netOperator = mTelephonyMgr.getSimOperator();
             mobInfo.netName = mTelephonyMgr.getNetworkOperatorName();
         }
-        //TelephonyManager mTelephonyMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-
-
-        //mobInfo.imei = android.os.SystemProperties.get(android.telephony.TelephonyProperties.PROPERTY_IMSI);
-        //TelephonyManager tMgr = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-
         mobInfo.mobileState = isMobileEnabled();
-
         mobInfo.phoneType = mTelephonyMgr.getPhoneType();
-
         mobInfo.brand = Build.BRAND;
         mobInfo.manuf = Build.MANUFACTURER;
         mobInfo.product = Build.PRODUCT;
         mobInfo.model = Build.MODEL;
 
-
-        GsmCellLocation cellLocation = (GsmCellLocation) mTelephonyMgr.getCellLocation();
-        if(cellLocation != null) {
-            mobInfo.cid = cellLocation.getCid();
-            mobInfo.cid_3g = mobInfo.cid & 0xffff;
-            mobInfo.rnc = (mobInfo.cid & 0xffff0000) >> 16;
-            mobInfo.lac = cellLocation.getLac();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            GsmCellLocation cellLocation = (GsmCellLocation) mTelephonyMgr.getCellLocation();
+            if(cellLocation != null) {
+                mobInfo.cid = cellLocation.getCid();
+                mobInfo.cid_3g = mobInfo.cid & 0xffff;
+                mobInfo.rnc = (mobInfo.cid & 0xffff0000) >> 16;
+                mobInfo.lac = cellLocation.getLac();
+            }
         }
-        //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        //Geo Locatoion:
-        Location loc = getLocation();//getLastKnownLocation();//
+        Location loc = getLocation();
         if(loc != null) {
             mobInfo.lon = loc.getLongitude();
             mobInfo.lat = loc.getLatitude();
@@ -512,36 +498,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private BroadcastReceiver wifiBroadcastReceiver = new BroadcastReceiver() {
-
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
-                ConnectivityManager cm =
-                        (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
+            if(intent.getAction() != null && intent.getAction().equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+                ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
                 if(activeNetwork != null) {
                     boolean isConnected = activeNetwork.isConnectedOrConnecting();
                     boolean isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
-                    //btnStartTest.setEnabled(true);
                     if(isWiFi) {
                         mobInfo.netSource = "Wifi";
                     } else {
                         mobInfo.netSource = "Mobile Data";
                     }
-                    Log.d("Con","isCon:" + isConnected + "- isWifi:" + isWiFi);
                 } else {
-                    //btnStartTest.setEnabled(false);
                     mobInfo.netSource = "NA";
                 }
                 txt_netSrc.setText(mobInfo.netSource);
             }
-            if(intent.getAction().equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
-                NetworkInfo networkInfo =
-                        intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+            if(intent.getAction() != null && intent.getAction().equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
+                NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
                 if(networkInfo!=null && networkInfo.isConnected()) {
-                    //do stuff
-                    WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+                    WifiManager wifiManager = (WifiManager)context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                     WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                     mobInfo.wifiSsid = wifiInfo.getSSID();
                     mobInfo.wifiIsConnected = true;
@@ -553,65 +531,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     txt_wifiSsid.setText("---");
                     txt_wifiState.setText("Disconnected");
                 }
-                //Other actions implementation
             }
         }
     };
-    /* Called when the application is minimized */
-    @Override
-    protected void onPause()
-    {
-        super.onPause();
-        //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_NONE);
-        locationTracker.unregProviders();
-        unregisterReceiver(wifiBroadcastReceiver);
-    }
 
-    /* Called when the application resumes */
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        progressReceiver receiver = new progressReceiver();
-        IntentFilter filter= new IntentFilter("com.Mohammad.ac.test3g.PROGRESS");
-        LocalBroadcastManager.getInstance(this).registerReceiver (receiver, filter);
-
-        filter= new IntentFilter("com.Mohammad.ac.test3g.U_PROGRESS");
-        LocalBroadcastManager.getInstance(this).registerReceiver (receiver, filter);
-
-        filter= new IntentFilter("com.Mohammad.ac.test3g.DONE");
-        LocalBroadcastManager.getInstance(this).registerReceiver (receiver, filter);
-        //Log.d("dev", mobInfo.deviceId);
-        System.out.print("dev"+mobInfo.deviceId);
-        //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
-        locationTracker.regProviders();
-
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(wifiBroadcastReceiver, intentFilter);
-
-        int tmpInt = getSpeedMeterMaxIdx();
-        if(speedMeterMaxIdx != tmpInt) {
-            speedMeterMaxIdx = tmpInt;
-            setSpeedMeterMax(speedMeterMaxIdx);
-        }
-        testDuration = getSpeedTestLen();
-    }
-    /* —————————– */
-    /* Start the PhoneState listener */
-    /* —————————– */
-    //private final static String LTE_SIGNAL_STRENGTH = "getLteSignalStrength";
     private String getLTEsignalStrengthString(SignalStrength signalStrength)
     {
         String tmpStr = "";
-        if(Build.VERSION.SDK_INT > 17){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             List<CellInfo> cellInfos = mTelephonyMgr.getAllCellInfo();
-            if(cellInfos.size() !=0) {
+            if(cellInfos != null && !cellInfos.isEmpty()) {
                 CellInfo cInfo = cellInfos.get(0);
-
                 if (cInfo instanceof CellInfoLte) {
-                    //LTE
                     CellSignalStrengthLte ssLte = ((CellInfoLte) cInfo).getCellSignalStrength();
                     tmpStr += ssLte.getAsuLevel();
                     tmpStr += ssLte.getDbm();
@@ -627,67 +558,50 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void onCellLocationChanged(CellLocation location)
         {
-            mobInfo.netType = mTelephonyMgr.getNetworkType();
+            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                mobInfo.netType = mTelephonyMgr.getNetworkType();
+            }
             mobInfo.netClass = getNetworkClass(mobInfo.netType);
-            //show info
             MainActivity.this.txt_netclass.setText(mobInfo.netClass + " - " + mobInfo.netClass2);
 
             if(location instanceof GsmCellLocation) {
                 GsmCellLocation cellLocation = (GsmCellLocation) location;
-                if (cellLocation != null) {
-                    mobInfo.cid = cellLocation.getCid();
-                    mobInfo.cid_3g = mobInfo.cid & 0xffff;
-                    mobInfo.rnc = (mobInfo.cid & 0xffff0000) >> 16;
-                    mobInfo.lac = cellLocation.getLac();
+                mobInfo.cid = cellLocation.getCid();
+                mobInfo.cid_3g = mobInfo.cid & 0xffff;
+                mobInfo.rnc = (mobInfo.cid & 0xffff0000) >> 16;
+                mobInfo.lac = cellLocation.getLac();
 
-                    if (mobInfo.netClass.equals("2G")) {
-                        MainActivity.this.txt_cellid.setText("" + mobInfo.cid);
-                        MainActivity.this.txt_rnc.setText("");
-                    } else {
-                        MainActivity.this.txt_cellid.setText(String.format("%04d", mobInfo.cid_3g));
-                        MainActivity.this.txt_rnc.setText("" + mobInfo.rnc);
-                    }
-                    MainActivity.this.txt_lac.setText(""+mobInfo.lac);
+                if (mobInfo.netClass.equals("2G")) {
+                    MainActivity.this.txt_cellid.setText("" + mobInfo.cid);
+                    MainActivity.this.txt_rnc.setText("");
+                } else {
+                    MainActivity.this.txt_cellid.setText(String.format(Locale.getDefault(), "%04d", mobInfo.cid_3g));
+                    MainActivity.this.txt_rnc.setText("" + mobInfo.rnc);
                 }
-            } else if(Build.VERSION.SDK_INT > 17 && mobInfo.netClass.equals("4G")) {
-                List<CellInfo> cellInfos = mTelephonyMgr.getAllCellInfo();
-                if(cellInfos.size() != 0) {
-                    CellInfo cInfo = cellInfos.get(0);
-
-                    if (cInfo instanceof CellInfoLte) {
-                        //LTE
-                        CellIdentityLte cellId = ((CellInfoLte) cInfo).getCellIdentity();
-                        mobInfo.lac = cellId.getTac();
-                        mobInfo.cid = cellId.getCi();
-                        MainActivity.this.txt_cellid.setText("" + mobInfo.cid);
-                        MainActivity.this.txt_rnc.setText("");
-                        MainActivity.this.txt_lac.setText(mobInfo.lac);
+                MainActivity.this.txt_lac.setText(""+mobInfo.lac);
+            } else if(mobInfo.netClass.equals("4G")) {
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    List<CellInfo> cellInfos = mTelephonyMgr.getAllCellInfo();
+                    if(cellInfos != null && !cellInfos.isEmpty()) {
+                        CellInfo cInfo = cellInfos.get(0);
+                        if (cInfo instanceof CellInfoLte) {
+                            CellIdentityLte cellId = ((CellInfoLte) cInfo).getCellIdentity();
+                            mobInfo.lac = cellId.getTac();
+                            mobInfo.cid = cellId.getCi();
+                            MainActivity.this.txt_cellid.setText("" + mobInfo.cid);
+                            MainActivity.this.txt_rnc.setText("");
+                            MainActivity.this.txt_lac.setText(""+mobInfo.lac);
+                        }
                     }
                 }
             }
-            /*if(mobInfo.rssi != oldRssi) {
-                if(mobInfo.rssi != 99 && mobInfo.rssi !=0) {
-                    txt_rssi.setText("" + mobInfo.rssi);
-                }else {
-                    txt_rssi.setText("---");
-                }
-            }*/
             super.onCellLocationChanged(location);
         }
-        /* Get the Signal strength from the provider, each tiome there is an update */
+
         @Override
         public void onSignalStrengthsChanged(SignalStrength signalStrength)
         {
             super.onSignalStrengthsChanged(signalStrength);
-
-            /*{
-
-                Class tClass = signalStrength.getClass();
-                Method[] methods = tClass.getMethods();
-                for (int i = 0; i < methods.length; i++) {
-                    System.out.println("public method: " + methods[i]);
-                }
-            }*/
             mobInfo.SignalStrengths = signalStrength.toString();
             mobInfo.SignalStrengths += ">>" + signalStrength.getCdmaDbm() + "," + signalStrength.getCdmaEcio() + "," + signalStrength.getEvdoDbm();
             mobInfo.SignalStrengths +=  "," + signalStrength.getEvdoEcio() + "," + signalStrength.getEvdoSnr() + "," + signalStrength.getGsmBitErrorRate();
@@ -710,73 +624,47 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
             String ss = getLTEsignalStrengthString(signalStrength);
             mobInfo.SignalStrengths += ">>LTE:" + ss;
-
-            //mTelephonyMgr.listen(MyListener, PhoneStateListener.LISTEN_NONE);
         }
-        /*@Override
-        public void onCellInfoChanged(List<CellInfo> cellInfo)
-        {
-            Log.i("CellListener","onCellInfoChanged(List<CellInfo> cellInfo) ");
-            super.onCellInfoChanged(cellInfo);
-
-            if(cellInfo == null) return;     // this always null here
-
-            for (CellInfo c : cellInfo) {
-                Log.i("CellListener"," c = "+c);
-            }
-        }*/
-    };/* End of private Class */
-
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     public static String getRateWithUnit(Double value) {
         String str_unit="";
-        speedUnit theunit = speedUnit.bps;
-
-        //double rate = 8.0*1e9*total/delta;
+        double displayValue = value;
         if(value < 1024) {
-            theunit = speedUnit.bps;
+            // bps
         } else if (value >= 1024 && value <1024*1024) {
-            value /=1024;
+            displayValue = value / 1024;
             str_unit="K";
-            theunit = speedUnit.Kbps;
         }else if (value >= 1024*1024 && value <1024*1024*1024) {
-            value /=1024*1024;
-            theunit = speedUnit.Mbps;
+            displayValue = value / 1024 / 1024;
             str_unit="M";
         }else if (value >= 1024*1024*1024) {
-            value /= 1024*1024*1024;
-            theunit = speedUnit.Gbps;
+            displayValue = value / 1024 / 1024 / 1024;
             str_unit="G";
         }
-        return(String.format("%.2f%s", value, str_unit));
+        return(String.format(Locale.getDefault(), "%.2f%s", displayValue, str_unit));
     }
 
     public Location getLocation() {
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         if (locationManager != null) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return null;
+            }
             Location lastKnownLocationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (lastKnownLocationGPS != null) {
                 return lastKnownLocationGPS;
             } else {
-                Location loc =  locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-                //System.out.println("1::"+loc);
-                //System.out.println("2::"+loc.getLatitude());
-                return loc;
+                return locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
             }
         } else {
             return null;
@@ -785,6 +673,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private Location getLastKnownLocation() {
         LocationManager mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return null;
+        }
         List<String> providers = mLocationManager.getProviders(true);
         Location bestLocation = null;
         for (String provider : providers) {
@@ -793,7 +684,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 continue;
             }
             if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-                // Found best last known location: %s", l);
                 bestLocation = l;
             }
         }
@@ -808,15 +698,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private class progressReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            //mobInfo.minRxRate = intent.getDoubleExtra("MIN_RATE",0);
-            //mobInfo.maxRxRate = intent.getDoubleExtra("MAX_RATE",0);
+            if (intent.getAction() == null) return;
             switch(intent.getAction()) {
                 case "com.Mohammad.ac.test3g.PROGRESS":
                     mobInfo.rxRate = intent.getDoubleExtra("RxRATE",0);
                     mobInfo.minRxRate = intent.getDoubleExtra("MinRxRATE",0);
                     mobInfo.maxRxRate = intent.getDoubleExtra("MaxRxRATE",0);
-                    boolean showInf = intent.getBooleanExtra("SHOW_INFO",false);
-                    if(showInf) {
+                    if(intent.getBooleanExtra("SHOW_INFO",false)) {
                         mobInfo.showInfo(thisActivity);
                     }
                     break;
@@ -824,27 +712,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     mobInfo.txRate = intent.getDoubleExtra("TxRATE",0);
                     mobInfo.minTxRate = intent.getDoubleExtra("MinTxRATE",0);
                     mobInfo.maxTxRate = intent.getDoubleExtra("MaxTxRATE",0);
-                    showInf = intent.getBooleanExtra("SHOW_INFO",false);
-                    if(showInf) {
+                    if(intent.getBooleanExtra("SHOW_INFO",false)) {
                         mobInfo.showInfo(thisActivity);
                     }
-                    boolean uploadDone = intent.getBooleanExtra("UL_DONE",false);
-                    if(uploadDone) {
+                    if(intent.getBooleanExtra("UL_DONE",false)) {
                         dbHandler.add3gTest(mobInfo);
                         mobInfo.upload(thisActivity);
                     }
                     break;
                 case "com.Mohammad.ac.test3g.DONE":
-                    uploadDone = intent.getBooleanExtra("DONE",false);
-                    if(uploadDone) {
+                    if(intent.getBooleanExtra("DONE",false)) {
                         btnStartTest.setVisibility(View.VISIBLE);
                         btnHistory.setVisibility(View.VISIBLE);
                     }
                     break;
             }
-
         }
-
     }
 
     @Override
