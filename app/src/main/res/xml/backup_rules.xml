@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Same exclusion as data_extraction_rules.xml, but using the legacy schema
+     required for devices running Android versions older than 12 (API 31). -->
+<full-backup-content>
+    <exclude domain="database" path="netSpeedInfo.db" />
+</full-backup-content>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Controls what's included when a user backs up to the cloud (Android 12+) or
+  transfers data to a new device. The SQLite database stores past test results
+  including GPS coordinates (see databaseHandler/c_Info), so it's excluded here
+  rather than silently copied to Google's backup service or a new device.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="database" path="netSpeedInfo.db" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="database" path="netSpeedInfo.db" />
+    </device-transfer>
+</data-extraction-rules>
