@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.Mohammad.ac.test3g"
-    compileSdkVersion 34
+    namespace "com.Mohammad.ac.SpeedTest"
+    compileSdkVersion 36
     
     defaultConfig {
         applicationId 'com.Mohammad.ac.SpeedTest'
-        minSdkVersion 21
-        targetSdkVersion 34
+        minSdkVersion 23
+        targetSdkVersion 36
         versionName '2.40'
         versionCode 240
     }
@@ -42,10 +42,10 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
-    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.2.0'
+    implementation 'androidx.coordinatorlayout:coordinatorlayout:1.3.0'
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'com.cardiomood.android:android-widgets:0.1.1'

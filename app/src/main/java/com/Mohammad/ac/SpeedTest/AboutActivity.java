@@ -1,4 +1,4 @@
-package com.Mohammad.ac.test3g;
+package com.Mohammad.ac.SpeedTest;
 
 import android.os.Bundle;
 import android.text.Html;
@@ -45,9 +45,3 @@ public class AboutActivity
     return super.onOptionsItemSelected(paramMenuItem);
   }
 }
-
-
-/* Location:              C:\Downloads\Android\11Reverse Eng\My 3G Test\output_jar.jar!\com\Mohammad\ac\test3g\AboutActivity.class
- * Java compiler version: 6 (50.0)
- * JD-Core Version:       0.7.1
- */

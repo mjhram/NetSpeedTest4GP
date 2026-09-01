@@ -1,4 +1,4 @@
-package com.Mohammad.ac.test3g;
+package com.Mohammad.ac.SpeedTest;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -143,5 +143,3 @@ class MyInfoArrayAdapter extends ArrayAdapter<c_Info> {
     }
 
 }
-
-

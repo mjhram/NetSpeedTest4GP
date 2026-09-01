@@ -1,4 +1,4 @@
-package com.Mohammad.ac.test3g;
+package com.Mohammad.ac.SpeedTest;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.Mohammad.ac.test3g"
+    package="com.Mohammad.ac.SpeedTest"
     android:versionCode="1"
     android:versionName="1.0">
 
@@ -45,7 +45,7 @@
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="androidx.core.app.PARENT_ACTIVITY"
-                android:value="com.Mohammad.ac.test3g.MainActivity" />
+                android:value="com.Mohammad.ac.SpeedTest.MainActivity" />
         </activity>
         <activity
             android:name=".Settings.MainPreferenceActivity"
@@ -56,10 +56,10 @@
             >
             <meta-data
                 android:name="androidx.core.app.PARENT_ACTIVITY"
-                android:value="com.Mohammad.ac.test3g.MainActivity" />
+                android:value="com.Mohammad.ac.SpeedTest.MainActivity" />
 
             <intent-filter>
-                <action android:name="com.Mohammad.ac.test3g.MAIN_PREFS" />
+                <action android:name="com.Mohammad.ac.SpeedTest.MAIN_PREFS" />
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />

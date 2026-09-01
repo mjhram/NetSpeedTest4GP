@@ -1,4 +1,4 @@
-package com.Mohammad.ac.test3g;
+package com.Mohammad.ac.SpeedTest;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
@@ -53,7 +53,7 @@ import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.Mohammad.ac.test3g.Settings.MainPreferenceActivity;
+import com.Mohammad.ac.SpeedTest.Settings.MainPreferenceActivity;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 
 import java.util.List;
@@ -331,13 +331,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void resumeAppLogic() {
         progressReceiver receiver = new progressReceiver();
-        IntentFilter filter= new IntentFilter("com.Mohammad.ac.test3g.PROGRESS");
+        IntentFilter filter= new IntentFilter("com.Mohammad.ac.SpeedTest.PROGRESS");
         LocalBroadcastManager.getInstance(this).registerReceiver (receiver, filter);
 
-        filter= new IntentFilter("com.Mohammad.ac.test3g.U_PROGRESS");
+        filter= new IntentFilter("com.Mohammad.ac.SpeedTest.U_PROGRESS");
         LocalBroadcastManager.getInstance(this).registerReceiver (receiver, filter);
 
-        filter= new IntentFilter("com.Mohammad.ac.test3g.DONE");
+        filter= new IntentFilter("com.Mohammad.ac.SpeedTest.DONE");
         LocalBroadcastManager.getInstance(this).registerReceiver (receiver, filter);
         
         if (locationTracker != null) {
@@ -700,7 +700,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() == null) return;
             switch(intent.getAction()) {
-                case "com.Mohammad.ac.test3g.PROGRESS":
+                case "com.Mohammad.ac.SpeedTest.PROGRESS":
                     mobInfo.rxRate = intent.getDoubleExtra("RxRATE",0);
                     mobInfo.minRxRate = intent.getDoubleExtra("MinRxRATE",0);
                     mobInfo.maxRxRate = intent.getDoubleExtra("MaxRxRATE",0);
@@ -708,7 +708,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         mobInfo.showInfo(thisActivity);
                     }
                     break;
-                case "com.Mohammad.ac.test3g.U_PROGRESS":
+                case "com.Mohammad.ac.SpeedTest.U_PROGRESS":
                     mobInfo.txRate = intent.getDoubleExtra("TxRATE",0);
                     mobInfo.minTxRate = intent.getDoubleExtra("MinTxRATE",0);
                     mobInfo.maxTxRate = intent.getDoubleExtra("MaxTxRATE",0);
@@ -720,7 +720,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         mobInfo.upload(thisActivity);
                     }
                     break;
-                case "com.Mohammad.ac.test3g.DONE":
+                case "com.Mohammad.ac.SpeedTest.DONE":
                     if(intent.getBooleanExtra("DONE",false)) {
                         btnStartTest.setVisibility(View.VISIBLE);
                         btnHistory.setVisibility(View.VISIBLE);

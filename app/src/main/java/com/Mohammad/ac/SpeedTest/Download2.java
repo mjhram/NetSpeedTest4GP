@@ -1,4 +1,4 @@
-package com.Mohammad.ac.test3g;
+package com.Mohammad.ac.SpeedTest;
 
 import android.net.TrafficStats;
 import android.os.AsyncTask;
@@ -10,7 +10,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 
-import static com.Mohammad.ac.test3g.MainActivity.socketTimeOut;
+import static com.Mohammad.ac.SpeedTest.MainActivity.socketTimeOut;
 
 /**
  * Created by mohammad.haider on 023 2/23/2017.
@@ -155,4 +155,3 @@ class Download2 extends AsyncTask<String, Double, String> {
     }
 
 }
-

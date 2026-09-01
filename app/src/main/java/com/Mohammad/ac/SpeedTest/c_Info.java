@@ -1,4 +1,4 @@
-package com.Mohammad.ac.test3g;
+package com.Mohammad.ac.SpeedTest;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -226,7 +226,7 @@ public class c_Info implements Parcelable{
             public void onResponse(String response) {
 
                 Log.d(tag_string, "AddTReq Response: " + response);
-                Intent resultsIntent=new Intent("com.Mohammad.ac.test3g.DONE");
+                Intent resultsIntent=new Intent("com.Mohammad.ac.SpeedTest.DONE");
                 resultsIntent.putExtra("DONE", true);
                 LocalBroadcastManager localBroadcastManager =LocalBroadcastManager.getInstance(cntx);
                 localBroadcastManager.sendBroadcast(resultsIntent);
