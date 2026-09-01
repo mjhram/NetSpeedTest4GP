@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Customize your theme here. -->
-    <!--item name="colorPrimary">#607099</item>
-    <item name="colorPrimaryDark">#404070</item-->
-    <color name="colorPrimary">#555994</color>
-    <color name="colorPrimaryDark">#555994</color>
+    <!-- Modern palette: blue-to-teal, matching the new app icon. -->
+    <color name="colorPrimary">#3D5AFE</color>
+    <color name="colorPrimaryDark">#2A3EB1</color>
+    <color name="colorSecondary">#00BFA5</color>
     <color name="textColorPrimary">#FFFFFF</color>
     <color name="windowBackground">#FFFFFF</color>
-    <color name="navigationBarColor">#000000</color>
-    <color name="colorAccent">#FF80AB</color>
+    <color name="navigationBarColor">#12163A</color>
+    <color name="colorAccent">#00BFA5</color>
+
+    <!-- Dashboard gradient + card surface used in activity_main.xml -->
+    <color name="dashboardGradientStart">#12163A</color>
+    <color name="dashboardGradientEnd">#2A3EB1</color>
+    <color name="cardSurface">#33FFFFFF</color>
+    <color name="cardStroke">#40FFFFFF</color>
 </resources>

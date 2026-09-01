@@ -39,26 +39,24 @@
                     android:orientation="horizontal"
                     android:layout_alignParentBottom="true"
                     >
-                    <Button
-                        android:textSize="25dp"
-                        android:textColor="#ff000000"
+                    <com.google.android.material.button.MaterialButton
+                        android:textSize="16sp"
                         android:id="@+id/btnStartTest"
                         android:layout_width="fill_parent"
                         android:layout_height="match_parent"
                         android:text="Start Test"
-                        android:background="#ff99D9EA"
+                        style="@style/Widget.App.Button.Primary"
                         android:layout_weight="1"
                         android:layout_margin="8dp"
                         />
 
-                    <Button
-                        android:textSize="25dp"
-                        android:textColor="#ff000000"
+                    <com.google.android.material.button.MaterialButton
+                        android:textSize="16sp"
                         android:id="@+id/id_BtnHistory"
                         android:layout_width="fill_parent"
                         android:layout_height="match_parent"
                         android:text="Show History"
-                        android:background="#ff99D9EA"
+                        style="@style/Widget.App.Button.Secondary"
                         android:layout_weight="1"
                         android:padding="8dp"
                         android:layout_margin="8dp"
@@ -91,6 +89,9 @@
                         android:id="@+id/gridLayout"
                         android:layout_above="@+id/linearLayout"
                         android:onClick="onMainClick"
+                        android:background="@drawable/bg_card_glass"
+                        android:padding="16dp"
+                        android:useDefaultMargins="true"
                         >
 
                         <TextView
@@ -264,9 +265,10 @@
                             android:textSize="@dimen/textsize"
                             />
                         <TextView
-                            android:textColor="#ff0000ff"
+                            android:textColor="@color/colorSecondary"
                             android:id="@+id/id_lat"
                             android:clickable="true"
+                            android:textStyle="bold"
                             android:text="---"
                             android:onClick="onLocationClick"
                             android:textSize="@dimen/textsize"
@@ -299,10 +301,6 @@
                     </GridLayout>
                 </ScrollView>
 
-
-                />
-
-                />
             </LinearLayout>
 
 
