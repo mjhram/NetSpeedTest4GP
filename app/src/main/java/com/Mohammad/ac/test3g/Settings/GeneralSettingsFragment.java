@@ -18,30 +18,33 @@
 package com.Mohammad.ac.test3g.Settings;
 
 import android.os.Bundle;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.util.Log;
+
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
 
 import com.Mohammad.ac.test3g.R;
 
-public class GeneralSettingsFragment extends PreferenceFragment
+public class GeneralSettingsFragment extends PreferenceFragmentCompat
         implements Preference.OnPreferenceChangeListener
 {
 
     //int aboutClickCounter = 0;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        addPreferencesFromResource(R.xml.pref_general);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.pref_general, rootKey);
 
         Preference prefListeners = findPreference("speedmeterMax");
-        prefListeners.setOnPreferenceChangeListener(this);
+        if (prefListeners != null) {
+            prefListeners.setOnPreferenceChangeListener(this);
+        }
 
         prefListeners = findPreference("speedtestlen");
-        prefListeners.setOnPreferenceChangeListener(this);
+        if (prefListeners != null) {
+            prefListeners.setOnPreferenceChangeListener(this);
+        }
     }
 
     @Override
@@ -49,11 +52,13 @@ public class GeneralSettingsFragment extends PreferenceFragment
         if(preference.getKey().equalsIgnoreCase("speedmeterMax")){
             //return true;
         }
-        final ListPreference list = (ListPreference) preference;
-        int index = list.findIndexOfValue(newValue.toString());
-        if (index != -1)
-        {
-            Log.v("speed_pref", Integer.toString(index));
+        if (preference instanceof ListPreference) {
+            final ListPreference list = (ListPreference) preference;
+            int index = list.findIndexOfValue(newValue.toString());
+            if (index != -1)
+            {
+                Log.v("speed_pref", Integer.toString(index));
+            }
         }
         return true;
     }

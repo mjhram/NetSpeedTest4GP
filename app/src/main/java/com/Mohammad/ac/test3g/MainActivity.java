@@ -51,11 +51,7 @@ import android.widget.Toast;
 
 import com.Mohammad.ac.test3g.Settings.MainPreferenceActivity;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
-// import com.crashlytics.android.Crashlytics;
-
 import java.util.List;
-
-// import io.fabric.sdk.android.Fabric;
 
 enum speedUnit {bps, Kbps, Mbps, Gbps};
 
@@ -184,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Fabric.with(this, new Crashlytics());
         thisActivity = this;
         serverUri = getResources().getString(R.string.serverUrl);
         upLoadServerUri = serverUri + "/en/upload.php";

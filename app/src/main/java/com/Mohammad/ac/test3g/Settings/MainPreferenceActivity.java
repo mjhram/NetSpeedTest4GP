@@ -18,7 +18,7 @@
 package com.Mohammad.ac.test3g.Settings;
 
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
+import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
@@ -26,7 +26,7 @@ import android.view.MenuItem;
 import com.Mohammad.ac.test3g.R;
 
 public class MainPreferenceActivity extends AppCompatActivity{
-    PreferenceFragment preferenceFragment = null;
+    Fragment preferenceFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +54,7 @@ public class MainPreferenceActivity extends AppCompatActivity{
                 break;*/
         }
 
-        getFragmentManager().beginTransaction()
+        getSupportFragmentManager().beginTransaction()
                 .replace(R.id.content_frame, preferenceFragment)
                 .commit();
 
