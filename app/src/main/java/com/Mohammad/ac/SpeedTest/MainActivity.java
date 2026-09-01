@@ -144,15 +144,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private String checkVer(){
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        String tmpStr = SP.getString("ver","1.0");
-        String ver="1.0";
-        if(!tmpStr.equals(ver)) {
+        String savedVer = SP.getString("ver","1.0");
+        String currentVer = "1.0";
+        if(!currentVer.equals(savedVer)) {
             SP.edit().remove("downloadhost").apply();
-            SP.edit().putString("ver",ver).apply();
-            tmpStr = ver;
+            SP.edit().putString("ver",currentVer).apply();
+            return currentVer;
         }
 
-        return tmpStr;
+        return savedVer;
     }
     private String getDownloadUrl(){
         SharedPreferences SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
@@ -185,7 +185,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         thisActivity = this;
         serverUri = getResources().getString(R.string.serverUrl);
-        upLoadServerUri = serverUri + "/en/upload.php";
+        // The old EC2 host's /en/upload.php is no longer reachable. Cloudflare runs a
+        // dedicated endpoint for exactly this - accept an upload and discard it,
+        // globally anycast, no server maintenance on our end.
+        upLoadServerUri = "https://speed.cloudflare.com/__up";
         downloadServerUri = "http://ipv4.download.thinkbroadband.com/10MB.zip";
 
         dbHandler = new databaseHandler(this);
@@ -270,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     btnHistory.setVisibility(View.GONE);
 
                     new Download2(MainActivity.this).execute(getDownloadUrl());
-                    new Upload2(MainActivity.this, true).execute(upLoadServerUri);
+                    new Upload2(MainActivity.this, false).execute(upLoadServerUri);
                 } else {
                     Toast.makeText(MainActivity.this.thisActivity, "No Network Available", Toast.LENGTH_LONG).show();
                 }
@@ -304,7 +307,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void requestPermissions() {
-        ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, PERMISSION_REQUEST_CODE);
+        // Prominent, in-app disclosure before the system permission dialogs appear -
+        // explains why location/phone-state access is being asked for, rather than
+        // surprising the user with a bare system prompt on first launch.
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.permission_rationale_title)
+                .setMessage(R.string.permission_rationale_message)
+                .setCancelable(false)
+                .setPositiveButton(R.string.permission_rationale_continue, (dialog, which) ->
+                        ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, PERMISSION_REQUEST_CODE))
+                .show();
     }
 
     @Override
@@ -717,7 +729,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
                     if(intent.getBooleanExtra("UL_DONE",false)) {
                         dbHandler.add3gTest(mobInfo);
-                        mobInfo.upload(thisActivity);
+                        //mobInfo.upload(thisActivity);
                     }
                     break;
                 case "com.Mohammad.ac.SpeedTest.DONE":

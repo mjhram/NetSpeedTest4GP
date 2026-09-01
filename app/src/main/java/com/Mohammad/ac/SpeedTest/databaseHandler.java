@@ -32,7 +32,7 @@ public class databaseHandler extends SQLiteOpenHelper {
 
 
                 String CREATE_3gTests_TABLE = "CREATE TABLE IF NOT EXISTS " + TABLE_3gTests + "("
-                        + "No INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+                        + "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,  time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,"
                         + " deviceId varchar(20)  DEFAULT NULL,"
                         + " Brand varchar(15)  DEFAULT NULL,"
                         + " Manufacturer varchar(15)  DEFAULT NULL,"
@@ -105,7 +105,7 @@ public class databaseHandler extends SQLiteOpenHelper {
         public List<c_Info> getAll3gTests() {
             List<c_Info> cInfoList = new ArrayList<c_Info>();
             // Select All Query
-            String selectQuery = "SELECT  * FROM " + TABLE_3gTests + " ORDER BY No DESC";
+            String selectQuery = "SELECT  * FROM " + TABLE_3gTests + " ORDER BY id DESC";
             SQLiteDatabase db = this.getWritableDatabase();
             Cursor cursor = db.rawQuery(selectQuery, null);
 

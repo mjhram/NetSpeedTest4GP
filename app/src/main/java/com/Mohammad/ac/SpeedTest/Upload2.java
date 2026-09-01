@@ -1,16 +1,18 @@
 package com.Mohammad.ac.SpeedTest;
 
+import static com.Mohammad.ac.SpeedTest.MainActivity.socketTimeOut;
+
 import android.net.TrafficStats;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 
-import static com.Mohammad.ac.SpeedTest.MainActivity.socketTimeOut;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Created by mohammad.haider on 021 2/21/2017.
@@ -92,45 +94,76 @@ public class Upload2 extends AsyncTask<String, Double, String> {
     protected String doInBackground(String... f_url) {
         //int count;
         int maxBufferSize = 20 * 1024;
+        // Cloudflare's own speed test client never posts more than 50,000,000 bytes in
+        // a single request - it does many bounded requests back to back instead of one
+        // giant streaming connection. Declaring a huge Content-Length (we tried 2GB)
+        // gets treated as abuse and the edge resets the connection ("Broken pipe").
+        // Match their pattern: one chunk per connection, repeated until testDuration.
+        final long chunkSize = 25_000_000L; // 25MB, well within Cloudflare's own usage
         try {
-            if(!disabled) {
+            if (!disabled) {
                 URI uri = new URI(f_url[0]);
                 String host = uri.getHost();
-                String path = "/";//uri.getPath();
-
-                Socket mSocket = new Socket();
-                mSocket.setSoTimeout(socketTimeOut);
-                mSocket.setReuseAddress(true);
-                mSocket.setKeepAlive(true);
-                mSocket.connect(new InetSocketAddress(host, 80));
-                if (mSocket == null || mSocket.isClosed()) {
-                    return null;
+                String path = uri.getPath();
+                if (path == null || path.isEmpty()) {
+                    path = "/";
                 }
-                final String head = "POST " + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\nAccept: " +
-                        "*/*\r\nContent-Length: " + 10000000 + "\r\n\r\n";
-                OutputStream outStream = mSocket.getOutputStream();
-                if (outStream == null) {
-                    return null;
-                }
-                outStream.write(head.getBytes());
-                outStream.flush();
 
-                byte dummy[] = new byte[maxBufferSize];
+                byte[] dummy = new byte[maxBufferSize];
                 uploadRate2(true);
-                while (true) {
-                    outStream.write(dummy);
+                long testStartTime = System.currentTimeMillis();
+                boolean bDone = false;
+
+                for (int k = 0; k < 100 && !bDone; k++) {
+                    // Cloudflare's upload-test endpoint (and virtually every modern
+                    // public host) requires TLS - plain port 80 will just get
+                    // refused/redirected.
+                    SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+                    SSLSocket mSocket = (SSLSocket) sslSocketFactory.createSocket(host, 443);
+                    mSocket.setSoTimeout(socketTimeOut);
+                    mSocket.setReuseAddress(true);
+                    mSocket.setKeepAlive(true);
+                    if (mSocket.isClosed()) {
+                        return null;
+                    }
+
+                    final String head = "POST " + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" +
+                            "User-Agent: NetSpeedTest4GP\r\n" +
+                            "Content-Type: application/octet-stream\r\n" +
+                            "Accept: */*\r\nContent-Length: " + chunkSize + "\r\n\r\n";
+                    OutputStream outStream = mSocket.getOutputStream();
+                    if (outStream == null) {
+                        return null;
+                    }
+                    outStream.write(head.getBytes());
                     outStream.flush();
-                    if (uploadRate2(false)) {
-                        break;
+
+                    long chunkWritten = 0;
+                    while (chunkWritten < chunkSize) {
+                        int toWrite = (int) Math.min(dummy.length, chunkSize - chunkWritten);
+                        outStream.write(dummy, 0, toWrite);
+                        outStream.flush();
+                        chunkWritten += toWrite;
+                        if (uploadRate2(false)) {
+                            bDone = true;
+                            break;
+                        }
+                    }
+                    outStream.close();
+                    mSocket.close();
+
+                    if (System.currentTimeMillis() - testStartTime > MainActivity.testDuration) {
+                        bDone = true;
                     }
                 }
-                mSocket.close();
             }
             if(theActivity.mobInfo.minTxRate == Double.MAX_VALUE) {
                 theActivity.mobInfo.minTxRate = 0;
             }
             theActivity.dbHandler.add3gTest(theActivity.mobInfo);
-            theActivity.mobInfo.upload(theActivity);
+            //theActivity.mobInfo.upload(theActivity);
+        } catch (SocketTimeoutException e) {
+            Log.e("Upload Exception", "Server did not respond in time (" + socketTimeOut + "ms) - possible bad host/path or blocked connection");
         } catch (Exception e) {
             e.printStackTrace();
             Log.e("Upload Exception", e.getMessage(), e);

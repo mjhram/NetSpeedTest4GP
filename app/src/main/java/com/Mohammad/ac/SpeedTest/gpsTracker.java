@@ -16,6 +16,8 @@ import android.util.Log;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
+import java.util.Locale;
+
 public class gpsTracker implements LocationListener {
 
     private final MainActivity mainActivity;
@@ -202,7 +204,7 @@ public class gpsTracker implements LocationListener {
         if(loc != null) {
             mainActivity.mobInfo.lon = loc.getLongitude();
             mainActivity.mobInfo.lat = loc.getLatitude();
-            mainActivity.txt_latitude.setText(""+mainActivity.mobInfo.lat + ", " + +mainActivity.mobInfo.lon);
+            mainActivity.txt_latitude.setText(String.format(Locale.getDefault(), "%.6f, %.6f", mainActivity.mobInfo.lat, mainActivity.mobInfo.lon));
         }
     }
 

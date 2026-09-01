@@ -2,29 +2,22 @@ package com.Mohammad.ac.SpeedTest;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Parcel;
 import android.os.Parcelable;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Locale;
 
 /**
  * Created by mohammad.haider on 2/16/2015.
  */
 public class c_Info implements Parcelable{
-    boolean serverUp = false;
+    //boolean serverUp = false;
     //private MainActivity theActivity;
     public String time="";//used for sqliteDB timestamp
     private String serverUri="";
@@ -176,7 +169,8 @@ public class c_Info implements Parcelable{
         cdmaDbm=in.readInt();
         cdmaEcio = in.readInt();
         wifiSsid = in.readString();
-        wifiIsConnected = (Boolean) in.readValue(null);
+        Object wifiObj = in.readValue(getClass().getClassLoader());
+        wifiIsConnected = wifiObj != null && (Boolean) wifiObj;
         netSource = in.readString();
         tmp = in.readString();
     }
@@ -205,7 +199,7 @@ public class c_Info implements Parcelable{
         }
     };
 
-    void upload(Context cntx){
+    /*void upload(Context cntx){
         if(serverUp) {
             //new uploadInfo(cntx).execute();
             add3GTest(cntx);
@@ -226,7 +220,7 @@ public class c_Info implements Parcelable{
             public void onResponse(String response) {
 
                 Log.d(tag_string, "AddTReq Response: " + response);
-                Intent resultsIntent=new Intent("com.Mohammad.ac.SpeedTest.DONE");
+                Intent resultsIntent=new Intent("com.Mohammad.ac.test3g.DONE");
                 resultsIntent.putExtra("DONE", true);
                 LocalBroadcastManager localBroadcastManager =LocalBroadcastManager.getInstance(cntx);
                 localBroadcastManager.sendBroadcast(resultsIntent);
@@ -243,122 +237,49 @@ public class c_Info implements Parcelable{
             @Override
             protected Map<String, String> getParams() {
                 // Posting params to register url
-                Map<String, String> params = new HashMap<String, String>();
+                Map<String, String> params = new HashMap<>();
                 params.put("tag", tag_string);
-                String tmp;
 
-                tmp = deviceId;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("deviceId", tmp);
-                tmp = imsi;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("imsi", imsi);
-                tmp = phoneNumber;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("phoneNumber", tmp);
+                params.put("deviceId", deviceId != null ? deviceId : "");
+                params.put("imsi", imsi != null ? imsi : "");
+                params.put("phoneNumber", phoneNumber != null ? phoneNumber : "");
                 params.put("imei", "");//imei);
-                tmp = netOperator;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("netOperator", tmp);
-                tmp = netName;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("netName", tmp);
+                params.put("netOperator", netOperator != null ? netOperator : "");
+                params.put("netName", netName != null ? netName : "");
 
-                params.put("netType", Integer.toString(netType));
-                tmp = netClass;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("netClass", tmp);
-                params.put("phoneType", Integer.toString(phoneType));
-                tmp = mobileState;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("mobileState", tmp);
-                params.put("cid", Integer.toString(cid));
-                params.put("cid_3g", Integer.toString(cid_3g));
-                params.put("rnc", Integer.toString(rnc));
-                params.put("lac", Integer.toString(lac));
-                params.put("rssi", Integer.toString(rssi));
+                params.put("netType", String.valueOf(netType));
+                params.put("netClass", netClass != null ? netClass : "");
+                params.put("phoneType", String.valueOf(phoneType));
+                params.put("mobileState", mobileState != null ? mobileState : "");
+                params.put("cid", String.valueOf(cid));
+                params.put("cid_3g", String.valueOf(cid_3g));
+                params.put("rnc", String.valueOf(rnc));
+                params.put("lac", String.valueOf(lac));
+                params.put("rssi", String.valueOf(rssi));
                 params.put("SignalStrengths",SignalStrengths);
-                String tmpStr = String.format("%d", Math.round(minRxRate));
-                params.put("minRxRate", tmpStr);
-                params.put("maxRxRate", String.format("%d", Math.round(maxRxRate)));
-                params.put("avRxRate", String.format("%d", Math.round(avRxRate)));
-                params.put("minTxRate", String.format("%d", Math.round(minTxRate)));
-                params.put("maxTxRate", String.format("%d", Math.round(maxTxRate)));
-                params.put("avTxRate", String.format("%d", Math.round(avTxRate)));
+                String rxMinStr = String.format(Locale.getDefault(), "%d", Math.round(minRxRate));
+                params.put("minRxRate", rxMinStr);
+                params.put("maxRxRate", String.format(Locale.getDefault(), "%d", Math.round(maxRxRate)));
+                params.put("avRxRate", String.format(Locale.getDefault(), "%d", Math.round(avRxRate)));
+                params.put("minTxRate", String.format(Locale.getDefault(), "%d", Math.round(minTxRate)));
+                params.put("maxTxRate", String.format(Locale.getDefault(), "%d", Math.round(maxTxRate)));
+                params.put("avTxRate", String.format(Locale.getDefault(), "%d", Math.round(avTxRate)));
                 params.put("lon", Double.toString(lon));
                 params.put("lat", Double.toString(lat));
-                tmp = brand;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("brand", tmp);
-                tmp = manuf;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("manuf", tmp);
-                tmp = product;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("product", tmp);
-                tmp = model;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("model", tmp);
-                tmp = deviceId2;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("deviceId2", tmp);
-                tmp = imsi2;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("imsi2", tmp);
-                tmp = phoneNumber2;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("phoneNum2", tmp);
-                tmp = netOperator2;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("netOperator2", tmp);
-                tmp = netName2;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("netName2", tmp);
-                params.put("netType2", Integer.toString(netType2));
-                tmp = netClass2;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("netClass2", tmp);
-                tmp = neighboringCells;
-                if(tmp == null)  {
-                    tmp ="";
-                }
-                params.put("nei", tmp);
-                params.put("cdmaDbm", Integer.toString(cdmaDbm));
-                params.put("cdmaEcio", Integer.toString(cdmaEcio));
+                params.put("brand", brand != null ? brand : "");
+                params.put("manuf", manuf != null ? manuf : "");
+                params.put("product", product != null ? product : "");
+                params.put("model", model != null ? model : "");
+                params.put("deviceId2", deviceId2 != null ? deviceId2 : "");
+                params.put("imsi2", imsi2 != null ? imsi2 : "");
+                params.put("phoneNum2", phoneNumber2 != null ? phoneNumber2 : "");
+                params.put("netOperator2", netOperator2 != null ? netOperator2 : "");
+                params.put("netName2", netName2 != null ? netName2 : "");
+                params.put("netType2", String.valueOf(netType2));
+                params.put("netClass2", netClass2 != null ? netClass2 : "");
+                params.put("nei", neighboringCells != null ? neighboringCells : "");
+                params.put("cdmaDbm", String.valueOf(cdmaDbm));
+                params.put("cdmaEcio", String.valueOf(cdmaEcio));
                 params.put("wifissid", wifiSsid);
                 params.put("netsrc", netSource);
                 params.put("tmp", "");
@@ -368,183 +289,106 @@ public class c_Info implements Parcelable{
         // Adding request to request queue
         strReq.setTag(tag_string);
         getRequestQueue(cntx).add(strReq);
-    }
+    }*/
 
     static public c_Info getInfoFromRow(Cursor in) {
         c_Info tmpMobInfo = new c_Info("");
 
-        tmpMobInfo.time=in.getString(in.getColumnIndex("time"));
-        tmpMobInfo.deviceId=in.getString(in.getColumnIndex("deviceId"));
-        tmpMobInfo.deviceId2=in.getString(in.getColumnIndex("deviceId2"));
-        tmpMobInfo.manuf=in.getString(in.getColumnIndex("Manufacturer"));
-        tmpMobInfo.brand=in.getString(in.getColumnIndex("Brand"));
-        tmpMobInfo.model=in.getString(in.getColumnIndex("Model"));
-        tmpMobInfo.product=in.getString(in.getColumnIndex("Product"));
-        tmpMobInfo.imsi=in.getString(in.getColumnIndex("imsi"));
-        tmpMobInfo.imsi2=in.getString(in.getColumnIndex("imsi2"));
-        tmpMobInfo.phoneNumber=in.getString(in.getColumnIndex("phoneNumber"));
-        tmpMobInfo.phoneNumber2=in.getString(in.getColumnIndex("phoneNum2"));
-        String imei=in.getString(in.getColumnIndex("imei"));
-        tmpMobInfo.netOperator=in.getString(in.getColumnIndex("netOperator"));
-        tmpMobInfo.netOperator2=in.getString(in.getColumnIndex("netOperator2"));
-        tmpMobInfo.netName=in.getString(in.getColumnIndex("netName"));
-        tmpMobInfo.netName2=in.getString(in.getColumnIndex("netName2"));
-        tmpMobInfo.netType=in.getInt(in.getColumnIndex("netType"));
-        tmpMobInfo.netType2=in.getInt(in.getColumnIndex("netType2"));
-        tmpMobInfo.netClass=in.getString(in.getColumnIndex("netClass"));
-        tmpMobInfo.netClass2=in.getString(in.getColumnIndex("netClass2"));
-        tmpMobInfo.phoneType=in.getInt(in.getColumnIndex("phoneType"));
-        tmpMobInfo.mobileState=in.getString(in.getColumnIndex("mobileState"));
-        tmpMobInfo.cid=in.getInt(in.getColumnIndex("cid"));
-        tmpMobInfo.cid_3g=in.getInt(in.getColumnIndex("cid_3g"));
-        tmpMobInfo.rnc=in.getInt(in.getColumnIndex("rnc"));
-        tmpMobInfo.lac=in.getInt(in.getColumnIndex("lac"));
-        tmpMobInfo.rssi=in.getInt(in.getColumnIndex("rssi"));
-        tmpMobInfo.SignalStrengths=in.getString(in.getColumnIndex("SignalStrengths"));
-        //tmpMobInfo.rxRate = in.getDouble(in.getColumnIndex("EmployeeName"));
-        //tmpMobInfo.txRate = in.getDouble(in.getColumnIndex("EmployeeName"));
-        tmpMobInfo.minRxRate=in.getDouble(in.getColumnIndex("minRxRate"));
-        tmpMobInfo.maxRxRate=in.getDouble(in.getColumnIndex("maxRxRate"));
-        tmpMobInfo.avRxRate=in.getDouble(in.getColumnIndex("avRxRate"));
-        tmpMobInfo.minTxRate=in.getDouble(in.getColumnIndex("minTxRate"));
-        tmpMobInfo.maxTxRate=in.getDouble(in.getColumnIndex("maxTxRate"));
-        tmpMobInfo.avTxRate=in.getDouble(in.getColumnIndex("avTxRate"));
-        //tmpMobInfo.pingTime=in.getDouble(in.getColumnIndex("EmployeeName"));
-        tmpMobInfo.lat=in.getDouble(in.getColumnIndex("lat"));
-        tmpMobInfo.lon=in.getDouble(in.getColumnIndex("lon"));
-        tmpMobInfo.neighboringCells = in.getString(in.getColumnIndex("nei"));
-        tmpMobInfo.cdmaDbm=in.getInt(in.getColumnIndex("cdmaDbm"));
-        tmpMobInfo.cdmaEcio = in.getInt(in.getColumnIndex("cdmaEcio"));
-        tmpMobInfo.wifiSsid = in.getString(in.getColumnIndex("wifissid"));
-        tmpMobInfo.netSource = in.getString(in.getColumnIndex("netsrc"));
+        int index;
+        if ((index = in.getColumnIndex("time")) != -1) tmpMobInfo.time = in.getString(index);
+        if ((index = in.getColumnIndex("deviceId")) != -1) tmpMobInfo.deviceId = in.getString(index);
+        if ((index = in.getColumnIndex("deviceId2")) != -1) tmpMobInfo.deviceId2 = in.getString(index);
+        if ((index = in.getColumnIndex("Manufacturer")) != -1) tmpMobInfo.manuf = in.getString(index);
+        if ((index = in.getColumnIndex("Brand")) != -1) tmpMobInfo.brand = in.getString(index);
+        if ((index = in.getColumnIndex("Model")) != -1) tmpMobInfo.model = in.getString(index);
+        if ((index = in.getColumnIndex("Product")) != -1) tmpMobInfo.product = in.getString(index);
+        if ((index = in.getColumnIndex("imsi")) != -1) tmpMobInfo.imsi = in.getString(index);
+        if ((index = in.getColumnIndex("imsi2")) != -1) tmpMobInfo.imsi2 = in.getString(index);
+        if ((index = in.getColumnIndex("phoneNumber")) != -1) tmpMobInfo.phoneNumber = in.getString(index);
+        if ((index = in.getColumnIndex("phoneNum2")) != -1) tmpMobInfo.phoneNumber2 = in.getString(index);
+        if ((index = in.getColumnIndex("netOperator")) != -1) tmpMobInfo.netOperator = in.getString(index);
+        if ((index = in.getColumnIndex("netOperator2")) != -1) tmpMobInfo.netOperator2 = in.getString(index);
+        if ((index = in.getColumnIndex("netName")) != -1) tmpMobInfo.netName = in.getString(index);
+        if ((index = in.getColumnIndex("netName2")) != -1) tmpMobInfo.netName2 = in.getString(index);
+        if ((index = in.getColumnIndex("netType")) != -1) tmpMobInfo.netType = in.getInt(index);
+        if ((index = in.getColumnIndex("netType2")) != -1) tmpMobInfo.netType2 = in.getInt(index);
+        if ((index = in.getColumnIndex("netClass")) != -1) tmpMobInfo.netClass = in.getString(index);
+        if ((index = in.getColumnIndex("netClass2")) != -1) tmpMobInfo.netClass2 = in.getString(index);
+        if ((index = in.getColumnIndex("phoneType")) != -1) tmpMobInfo.phoneType = in.getInt(index);
+        if ((index = in.getColumnIndex("mobileState")) != -1) tmpMobInfo.mobileState = in.getString(index);
+        if ((index = in.getColumnIndex("cid")) != -1) tmpMobInfo.cid = in.getInt(index);
+        if ((index = in.getColumnIndex("cid_3g")) != -1) tmpMobInfo.cid_3g = in.getInt(index);
+        if ((index = in.getColumnIndex("rnc")) != -1) tmpMobInfo.rnc = in.getInt(index);
+        if ((index = in.getColumnIndex("lac")) != -1) tmpMobInfo.lac = in.getInt(index);
+        if ((index = in.getColumnIndex("rssi")) != -1) tmpMobInfo.rssi = in.getInt(index);
+        if ((index = in.getColumnIndex("SignalStrengths")) != -1) tmpMobInfo.SignalStrengths = in.getString(index);
+        if ((index = in.getColumnIndex("minRxRate")) != -1) tmpMobInfo.minRxRate = in.getDouble(index);
+        if ((index = in.getColumnIndex("maxRxRate")) != -1) tmpMobInfo.maxRxRate = in.getDouble(index);
+        if ((index = in.getColumnIndex("avRxRate")) != -1) tmpMobInfo.avRxRate = in.getDouble(index);
+        if ((index = in.getColumnIndex("minTxRate")) != -1) tmpMobInfo.minTxRate = in.getDouble(index);
+        if ((index = in.getColumnIndex("maxTxRate")) != -1) tmpMobInfo.maxTxRate = in.getDouble(index);
+        if ((index = in.getColumnIndex("avTxRate")) != -1) tmpMobInfo.avTxRate = in.getDouble(index);
+        if ((index = in.getColumnIndex("lat")) != -1) tmpMobInfo.lat = in.getDouble(index);
+        if ((index = in.getColumnIndex("lon")) != -1) tmpMobInfo.lon = in.getDouble(index);
+        if ((index = in.getColumnIndex("nei")) != -1) tmpMobInfo.neighboringCells = in.getString(index);
+        if ((index = in.getColumnIndex("cdmaDbm")) != -1) tmpMobInfo.cdmaDbm = in.getInt(index);
+        if ((index = in.getColumnIndex("cdmaEcio")) != -1) tmpMobInfo.cdmaEcio = in.getInt(index);
+        if ((index = in.getColumnIndex("wifissid")) != -1) tmpMobInfo.wifiSsid = in.getString(index);
+        if ((index = in.getColumnIndex("netsrc")) != -1) tmpMobInfo.netSource = in.getString(index);
+        if ((index = in.getColumnIndex("tmp")) != -1) tmpMobInfo.tmp = in.getString(index);
 
-        tmpMobInfo.tmp = in.getString(in.getColumnIndex("tmp"));
         return tmpMobInfo;
     }
 
     public void add3gTest2db(SQLiteDatabase db)
     {
-        // Tag used to cancel the request
-        final String tag_string = "add3GTest";
         ContentValues params = new ContentValues();
-        tmp = deviceId;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("deviceId", tmp);
-        tmp = imsi;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("imsi", imsi);
-        tmp = phoneNumber;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("phoneNumber", tmp);
-        params.put("imei", "");//imei);
-        tmp = netOperator;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("netOperator", tmp);
-        tmp = netName;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("netName", tmp);
 
-        params.put("netType", Integer.toString(netType));
-        tmp = netClass;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("netClass", tmp);
-        params.put("phoneType", Integer.toString(phoneType));
-        tmp = mobileState;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("mobileState", tmp);
-        params.put("cid", Integer.toString(cid));
-        params.put("cid_3g", Integer.toString(cid_3g));
-        params.put("rnc", Integer.toString(rnc));
-        params.put("lac", Integer.toString(lac));
-        params.put("rssi", Integer.toString(rssi));
+        params.put("deviceId", deviceId != null ? deviceId : "");
+        params.put("imsi", imsi != null ? imsi : "");
+        params.put("phoneNumber", phoneNumber != null ? phoneNumber : "");
+        params.put("imei", "");//imei);
+        params.put("netOperator", netOperator != null ? netOperator : "");
+        params.put("netName", netName != null ? netName : "");
+
+        params.put("netType", netType);
+        params.put("netClass", netClass != null ? netClass : "");
+        params.put("phoneType", phoneType);
+        params.put("mobileState", mobileState != null ? mobileState : "");
+        params.put("cid", cid);
+        params.put("cid_3g", cid_3g);
+        params.put("rnc", rnc);
+        params.put("lac", lac);
+        params.put("rssi", rssi);
         params.put("SignalStrengths",SignalStrengths);
-        String tmpStr = String.format("%d", Math.round(minRxRate));
-        params.put("minRxRate", tmpStr);
-        params.put("maxRxRate", String.format("%d", Math.round(maxRxRate)));
-        params.put("avRxRate", String.format("%d", Math.round(avRxRate)));
-        params.put("minTxRate", String.format("%d", Math.round(minTxRate)));
-        params.put("maxTxRate", String.format("%d", Math.round(maxTxRate)));
-        params.put("avTxRate", String.format("%d", Math.round(avTxRate)));
-        params.put("lon", Double.toString(lon));
-        params.put("lat", Double.toString(lat));
-        tmp = brand;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("Brand", tmp);
-        tmp = manuf;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("Manufacturer", tmp);
-        tmp = product;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("Product", tmp);
-        tmp = model;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("Model", tmp);
-        tmp = deviceId2;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("deviceId2", tmp);
-        tmp = imsi2;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("imsi2", tmp);
-        tmp = phoneNumber2;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("phoneNum2", tmp);
-        tmp = netOperator2;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("netOperator2", tmp);
-        tmp = netName2;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("netName2", tmp);
-        params.put("netType2", Integer.toString(netType2));
-        tmp = netClass2;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("netClass2", tmp);
-        tmp = neighboringCells;
-        if(tmp == null)  {
-            tmp ="";
-        }
-        params.put("nei", tmp);
-        params.put("cdmaDbm", Integer.toString(cdmaDbm));
-        params.put("cdmaEcio", Integer.toString(cdmaEcio));
+        params.put("minRxRate", minRxRate);
+        params.put("maxRxRate", maxRxRate);
+        params.put("avRxRate", avRxRate);
+        params.put("minTxRate", minTxRate);
+        params.put("maxTxRate", maxTxRate);
+        params.put("avTxRate", avTxRate);
+        params.put("lon", lon);
+        params.put("lat", lat);
+        params.put("Brand", brand != null ? brand : "");
+        params.put("Manufacturer", manuf != null ? manuf : "");
+        params.put("Product", product != null ? product : "");
+        params.put("Model", model != null ? model : "");
+        params.put("deviceId2", deviceId2 != null ? deviceId2 : "");
+        params.put("imsi2", imsi2 != null ? imsi2 : "");
+        params.put("phoneNum2", phoneNumber2 != null ? phoneNumber2 : "");
+        params.put("netOperator2", netOperator2 != null ? netOperator2 : "");
+        params.put("netName2", netName2 != null ? netName2 : "");
+        params.put("netType2", netType2);
+        params.put("netClass2", netClass2 != null ? netClass2 : "");
+        params.put("nei", neighboringCells != null ? neighboringCells : "");
+        params.put("cdmaDbm", cdmaDbm);
+        params.put("cdmaEcio", cdmaEcio);
         params.put("wifissid", wifiSsid);
         params.put("netsrc", netSource);
 
         params.put("tmp", "");
-        long tmp =  db.insert(TABLE_3gTests, null, params);
-        Log.d("Test",Long.toString(tmp));
+        long insertedId =  db.insert(TABLE_3gTests, null, params);
+        Log.d("Test",Long.toString(insertedId));
     }
 
     private RequestQueue mRequestQueue;
@@ -556,29 +400,29 @@ public class c_Info implements Parcelable{
     }
 
     public void showInfo(MainActivity theActivity) {
-        theActivity.txt_model.setText(manuf.toUpperCase() + "/" + model);
-        theActivity.txt_netclass.setText(netClass+" - "+netClass2);
-        theActivity.txt_netname.setText(netName+" - "+netName2);
-        if(netClass.equals("2G")) {
-            theActivity.txt_cellid.setText(""+cid);
+        theActivity.txt_model.setText(String.format("%s/%s", manuf.toUpperCase(), model));
+        theActivity.txt_netclass.setText(String.format("%s - %s", netClass, netClass2));
+        theActivity.txt_netname.setText(String.format("%s - %s", netName, netName2));
+        if("2G".equals(netClass)) {
+            theActivity.txt_cellid.setText(String.valueOf(cid));
             theActivity.txt_rnc.setText("");
         }else {
-            theActivity.txt_cellid.setText(String.format("%04d",cid_3g));
+            theActivity.txt_cellid.setText(String.format(Locale.getDefault(), "%04d", cid_3g));
             if(rnc==0) {
                 theActivity.txt_rnc.setText("");
             }else {
-                theActivity.txt_rnc.setText("" + rnc);
+                theActivity.txt_rnc.setText(String.valueOf(rnc));
             }
         }
-        theActivity.txt_lac.setText(""+lac);
-        theActivity.txt_rssi.setText(""+rssi);
-        theActivity.txt_minmaxrx.setText(MainActivity.getRateWithUnit(minRxRate)+", "+MainActivity.getRateWithUnit(maxRxRate)+", "+MainActivity.getRateWithUnit(avRxRate));
-        theActivity.txt_minmaxtx.setText(MainActivity.getRateWithUnit(minTxRate)+", "+MainActivity.getRateWithUnit(maxTxRate)+", "+MainActivity.getRateWithUnit(avTxRate));
-        theActivity.txt_latitude.setText(""+lat + ", " + +lon);
+        theActivity.txt_lac.setText(String.valueOf(lac));
+        theActivity.txt_rssi.setText(String.valueOf(rssi));
+        theActivity.txt_minmaxrx.setText(String.format("%s, %s, %s", MainActivity.getRateWithUnit(minRxRate), MainActivity.getRateWithUnit(maxRxRate), MainActivity.getRateWithUnit(avRxRate)));
+        theActivity.txt_minmaxtx.setText(String.format("%s, %s, %s", MainActivity.getRateWithUnit(minTxRate), MainActivity.getRateWithUnit(maxTxRate), MainActivity.getRateWithUnit(avTxRate)));
+        theActivity.txt_latitude.setText(String.format(Locale.getDefault(), "%.6f, %.6f", lat, lon));
 
         theActivity.txt_neighboring.setText(this.neighboringCells);
-        theActivity.txt_cdmaDbm.setText("" + this.cdmaDbm);
-        theActivity.txt_cdmaEcio.setText("" + this.cdmaEcio);
+        theActivity.txt_cdmaDbm.setText(String.valueOf(this.cdmaDbm));
+        theActivity.txt_cdmaEcio.setText(String.valueOf(this.cdmaEcio));
 
     }
 }

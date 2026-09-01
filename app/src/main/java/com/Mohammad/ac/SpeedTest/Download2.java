@@ -1,5 +1,7 @@
 package com.Mohammad.ac.SpeedTest;
 
+import static com.Mohammad.ac.SpeedTest.MainActivity.socketTimeOut;
+
 import android.net.TrafficStats;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -8,9 +10,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URI;
-
-import static com.Mohammad.ac.SpeedTest.MainActivity.socketTimeOut;
 
 /**
  * Created by mohammad.haider on 023 2/23/2017.
@@ -56,7 +57,10 @@ class Download2 extends AsyncTask<String, Double, String> {
                 }
 
                 //the request
-                final String downloadRequest = "GET " + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\n\r\n";
+                final String downloadRequest = "GET " + path + " HTTP/1.1\r\n"
+                        + "Host: " + host + "\r\n"
+                        + "User-Agent: NetSpeedTest4GP\r\n"
+                        + "Connection: close\r\n\r\n";
 
                 OutputStream outStream = mSocket.getOutputStream();
                 if (outStream == null) {
@@ -68,6 +72,31 @@ class Download2 extends AsyncTask<String, Double, String> {
                 final byte[] dummy = new byte[1024];
                 int read;
                 InputStream in = mSocket.getInputStream();
+
+                // Read and validate the status line before treating anything as file data.
+                StringBuilder statusLine = new StringBuilder();
+                int c;
+                while ((c = in.read()) != -1) {
+                    statusLine.append((char) c);
+                    if (statusLine.toString().endsWith("\r\n")) break;
+                }
+                Log.d("download_status", statusLine.toString().trim());
+                if (!statusLine.toString().contains(" 200 ")) {
+                    // Not a plain 200 OK (e.g. redirect/4xx) - this attempt can't measure
+                    // real throughput, so bail out of this socket instead of blocking on
+                    // read() waiting for a body that may never come.
+                    in.close();
+                    outStream.close();
+                    mSocket.close();
+                    continue;
+                }
+                // Skip the rest of the response headers (up to the blank line) so they
+                // aren't counted as downloaded file data.
+                int matched = 0; // tracks progress matching "\r\n\r\n"
+                final byte[] terminator = {'\r', '\n', '\r', '\n'};
+                while (matched < terminator.length && (c = in.read()) != -1) {
+                    matched = (c == terminator[matched]) ? matched + 1 : (c == terminator[0] ? 1 : 0);
+                }
                 //boolean bFirst = true;
 
                 long lastPublishProgressTime = System.currentTimeMillis();//can be intialized to 0;
@@ -128,6 +157,12 @@ class Download2 extends AsyncTask<String, Double, String> {
                 theActivity.mobInfo.minRxRate = 0;
             }
             Log.d("speedtest_total:", Long.toString(sum));
+        } catch (SocketTimeoutException e) {
+            // The socket read blocked for longer than socketTimeOut with no data -
+            // typically means the server accepted the connection but never sent (or
+            // stopped sending) the response body, e.g. after a redirect/error response.
+            Log.e("Error-netSpeedTest: ", "Download server did not send data in time (" + socketTimeOut + "ms)");
+            Log.d("err_speedtest_total:", Long.toString(sum));
         } catch (Exception e) {
             String eString = e.getMessage();
             if (eString != null) {
