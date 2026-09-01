@@ -21,12 +21,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.telephony.CellIdentityLte;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoLte;
@@ -51,11 +51,11 @@ import android.widget.Toast;
 
 import com.Mohammad.ac.test3g.Settings.MainPreferenceActivity;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
-import com.crashlytics.android.Crashlytics;
+// import com.crashlytics.android.Crashlytics;
 
 import java.util.List;
 
-import io.fabric.sdk.android.Fabric;
+// import io.fabric.sdk.android.Fabric;
 
 enum speedUnit {bps, Kbps, Mbps, Gbps};
 
@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
+        // Fabric.with(this, new Crashlytics());
         thisActivity = this;
         serverUri = getResources().getString(R.string.serverUrl);
         upLoadServerUri = serverUri + "/en/upload.php";
@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         };
 
         // Set the drawer toggle as the DrawerListener
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
         //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //getSupportActionBar().setHomeButtonEnabled(true);
 
@@ -437,6 +437,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void collectInitInfo() {
         mobInfo.neighboringCells = "";
+        /*
         List<NeighboringCellInfo> neighborCells = mTelephonyMgr.getNeighboringCellInfo();
         if(neighborCells!=null && neighborCells.size() > 0) {
             mobInfo.neighboringCells = "Neighboring List- Lac : Cid : PSC : RSSI\n";
@@ -453,6 +454,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 mobInfo.neighboringCells += String.valueOf(aCell.getLac()) + " : " + String.valueOf(aCell.getCid()) + " : " + String.valueOf((aCell.getPsc()) + " : " + str2 + "\n");
             }
         }
+        */
         txt_neighboring.setText(mobInfo.neighboringCells);
         //for Dual SIM
         /*myDualSim myDualSimInfo = myDualSim.getInstance(this);
@@ -474,9 +476,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             mobInfo.netName2 = myDualSimInfo.netName2;
         } else */
         {
-            mobInfo.deviceId=mTelephonyMgr.getDeviceId();
-            mobInfo.imsi = mTelephonyMgr.getSubscriberId();
-            mobInfo.phoneNumber = mTelephonyMgr.getLine1Number();
+            mobInfo.deviceId = ""; // mTelephonyMgr.getDeviceId();
+            mobInfo.imsi = ""; // mTelephonyMgr.getSubscriberId();
+            mobInfo.phoneNumber = ""; // mTelephonyMgr.getLine1Number();
             mobInfo.netType = mTelephonyMgr.getNetworkType();
             mobInfo.netClass = getNetworkClass(mobInfo.netType);
             mobInfo.netOperator = mTelephonyMgr.getSimOperator();
