@@ -170,7 +170,7 @@ public class c_Info implements Parcelable{
         cdmaEcio = in.readInt();
         wifiSsid = in.readString();
         Object wifiObj = in.readValue(getClass().getClassLoader());
-        wifiIsConnected = wifiObj != null && (Boolean) wifiObj;
+        wifiIsConnected = ((wifiObj != null) && ((Boolean) wifiObj));
         netSource = in.readString();
         tmp = in.readString();
     }

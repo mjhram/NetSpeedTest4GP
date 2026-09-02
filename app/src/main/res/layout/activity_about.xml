@@ -33,13 +33,7 @@
             android:layout_height="wrap_content"
             android:text="@string/about" />
 
-        <TextView android:textSize="20.0dip"
-            android:textColor="#ff000000"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/contact" />
-
-        <TextView
+            <TextView
             android:text="Privacy Policy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -60,7 +54,7 @@
             <TextView
                 android:id="@+id/editText2"
                 android:layout_width="match_parent"
-                android:layout_height="403dp"
+                android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textMultiLine"
                 android:scrollbars = "vertical"

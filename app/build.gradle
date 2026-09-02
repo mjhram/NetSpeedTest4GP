@@ -8,8 +8,8 @@ android {
         applicationId 'com.Mohammad.ac.SpeedTest'
         minSdkVersion 23
         targetSdkVersion 36
-        versionName '2.40'
-        versionCode 240
+        versionName '3.1'
+        versionCode 31
     }
 
     signingConfigs {
